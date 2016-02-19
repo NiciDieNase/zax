@@ -80,7 +80,7 @@ public class ServersListFragment extends BaseServiceConnectedListFragment {
 
 	@Override
 	protected void setupListAdapter() {
-		mServersListAdapter = mZabbixDataService
+		mServersListAdapter = getDataService()
 				.getServersListManagementAdapter();
 		Log.d(TAG, "Server list size: " + mServersListAdapter.getCount());
 		setListAdapter(mServersListAdapter);
@@ -111,7 +111,7 @@ public class ServersListFragment extends BaseServiceConnectedListFragment {
 		alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int whichButton) {
-				mZabbixDataService.removeZabbixServer(item);
+				getDataService().removeZabbixServer(item);
 			}
 		});
 
@@ -143,7 +143,7 @@ public class ServersListFragment extends BaseServiceConnectedListFragment {
 				String value = input.getText().toString();
 				if (value.length()>0) {
 					zabbixServer.setName(value);
-					mZabbixDataService.updateZabbixServer(zabbixServer);
+					getDataService().updateZabbixServer(zabbixServer);
 				}
 			}
 		});

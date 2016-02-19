@@ -36,7 +36,6 @@ import com.inovex.zabbixmobile.activities.fragments.ProblemsDetailsFragment;
 import com.inovex.zabbixmobile.activities.fragments.ProblemsListPage;
 import com.inovex.zabbixmobile.activities.fragments.ScreensListFragment;
 import com.inovex.zabbixmobile.adapters.BaseServiceAdapter;
-import com.inovex.zabbixmobile.adapters.BaseServicePagerAdapter;
 import com.inovex.zabbixmobile.adapters.BaseSeverityListPagerAdapter;
 import com.inovex.zabbixmobile.adapters.BaseSeverityPagerAdapter;
 import com.inovex.zabbixmobile.adapters.ChecksApplicationsPagerAdapter;
@@ -466,7 +465,8 @@ public class ZabbixDataService extends Service {
 					// even if the api call is not successful, we can still use
 					// the cached events
 				} finally {
-					hostGroups = mDatabaseHelper.getHostGroups(mCurrentZabbixServerId);
+					if(mDatabaseHelper != null)
+						hostGroups = mDatabaseHelper.getHostGroups(mCurrentZabbixServerId);
 				}
 			}
 

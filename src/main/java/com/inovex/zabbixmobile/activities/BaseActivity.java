@@ -91,6 +91,10 @@ public abstract class BaseActivity extends AppCompatActivity implements
 	private static final int REQUEST_CODE_PREFERENCES = 12345;
 	public static final int RESULT_PREFERENCES_CHANGED = 1;
 
+	public ZabbixDataService getmZabbixDataService() {
+		return mZabbixDataService;
+	}
+
 	protected ZabbixDataService mZabbixDataService;
 
 	protected String mTitle;

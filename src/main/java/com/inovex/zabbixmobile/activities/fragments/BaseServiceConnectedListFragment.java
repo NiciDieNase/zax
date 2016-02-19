@@ -18,13 +18,12 @@ This file is part of ZAX.
 package com.inovex.zabbixmobile.activities.fragments;
 
 import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
 
+import com.inovex.zabbixmobile.activities.BaseActivity;
 import com.inovex.zabbixmobile.data.ZabbixDataService;
 import com.inovex.zabbixmobile.data.ZabbixDataService.ZabbixDataBinder;
 
@@ -39,36 +38,36 @@ public abstract class BaseServiceConnectedListFragment extends
 	public static final String TAG = BaseServiceConnectedListFragment.class
 			.getSimpleName();
 
-	protected ZabbixDataService mZabbixDataService;
+	private ZabbixDataService getDataSer;
 
 	@Override
 	public void onStart() {
 		super.onStart();
 		Log.d(TAG, "onStart");
 		// we need to do this after the view was created!!
-		Intent intent = new Intent(getActivity(),
-				ZabbixDataService.class);
-		getActivity().getApplicationContext().bindService(intent, this,
-				Context.BIND_AUTO_CREATE);
+//		Intent intent = new Intent(getActivity(),
+//				ZabbixDataService.class);
+//		getActivity().getApplicationContext().bindService(intent, this,
+//				Context.BIND_AUTO_CREATE);
 	}
 
-	@Override
-	public void onStop() {
-		super.onStop();
-		getActivity().getApplicationContext().unbindService(this);
-	}
+//	@Override
+//	public void onStop() {
+//		super.onStop();
+//		getActivity().getApplicationContext().unbindService(this);
+//	}
 
 	@Override
 	public void onServiceConnected(ComponentName name, IBinder service) {
 		Log.d(TAG, "onServiceConnected");
 		ZabbixDataBinder binder = (ZabbixDataBinder) service;
-		mZabbixDataService = binder.getService();
+		getDataSer = binder.getService();
 		setupListAdapter();
 	}
 
 	@Override
 	public void onServiceDisconnected(ComponentName name) {
-		mZabbixDataService = null;
+		getDataSer = null;
 	}
 
 	/**
@@ -76,4 +75,7 @@ public abstract class BaseServiceConnectedListFragment extends
 	 */
 	protected abstract void setupListAdapter();
 
+	protected ZabbixDataService getDataService(){
+		return ((BaseActivity)this.getActivity()).getmZabbixDataService();
+	}
 }

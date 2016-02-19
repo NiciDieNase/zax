@@ -81,7 +81,7 @@ public class ScreensListFragment extends BaseServiceConnectedListFragment {
 
 	@Override
 	protected void setupListAdapter() {
-		this.mListAdapter = mZabbixDataService.getScreensListAdapter();
+		this.mListAdapter = getDataService().getScreensListAdapter();
 		setListAdapter(mListAdapter);
 	}
 

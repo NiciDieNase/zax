@@ -37,7 +37,7 @@ public class EventsListPage extends BaseSeverityFilterListPage<Event> {
 
 	@Override
 	protected void setupListAdapter() {
-		mListAdapter = mZabbixDataService.getEventsListAdapter(mSeverity);
+		mListAdapter = getDataService().getEventsListAdapter(mSeverity);
 		setListAdapter(mListAdapter);
 	}
 

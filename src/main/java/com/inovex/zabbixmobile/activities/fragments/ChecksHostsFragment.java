@@ -105,7 +105,7 @@ public class ChecksHostsFragment extends BaseServiceConnectedListFragment {
 
 	@Override
 	protected void setupListAdapter() {
-		this.mListAdapter = mZabbixDataService.getHostsListAdapter();
+		this.mListAdapter = getDataService().getHostsListAdapter();
 		setListAdapter(mListAdapter);
 	}
 

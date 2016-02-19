@@ -32,7 +32,7 @@ public class EventsListFragment extends BaseSeverityFilterListFragment<Event> {
 
 	@Override
 	protected BaseSeverityListPagerAdapter<Event> retrievePagerAdapter() {
-		return mZabbixDataService.getEventsListPagerAdapter();
+		return new EventsListPagerAdapter(getActivity());
 	}
 
 }

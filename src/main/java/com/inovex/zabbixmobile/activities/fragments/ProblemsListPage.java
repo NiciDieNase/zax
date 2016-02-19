@@ -38,7 +38,7 @@ public class ProblemsListPage extends BaseSeverityFilterListPage<Trigger> {
 
 	@Override
 	protected void setupListAdapter() {
-		mListAdapter = mZabbixDataService.getProblemsListAdapter(mSeverity);
+		mListAdapter = getDataService().getProblemsListAdapter(mSeverity);
 		setListAdapter(mListAdapter);
 	}
 

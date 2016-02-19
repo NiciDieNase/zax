@@ -123,7 +123,7 @@ public class ChecksApplicationsPage extends BaseServiceConnectedListFragment imp
 	@Override
 	protected void setupListAdapter() {
 		if(mListAdapter == null){
-			mLoadItemsTask = mZabbixDataService.loadItemsByApplicationId(
+			mLoadItemsTask = getDataService().loadItemsByApplicationId(
 					mApplicationID, this);
 			showListLoadingSpinner();
 		}
@@ -151,7 +151,7 @@ public class ChecksApplicationsPage extends BaseServiceConnectedListFragment imp
 
 	@Override
 	public void onItemsLoaded() {
-		this.mListAdapter = mZabbixDataService.getChecksItemsListAdapter(mApplicationID);
+		this.mListAdapter = getDataService().getChecksItemsListAdapter(mApplicationID);
 		setListAdapter(mListAdapter);
 		((ChecksApplicationsFragment)getParentFragment()).dismissItemsLoadingSpinner();
 		mListAdapter.notifyDataSetChanged();
