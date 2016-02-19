@@ -17,18 +17,17 @@ This file is part of ZAX.
 
 package com.inovex.zabbixmobile.model;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Locale;
-
 import android.content.Context;
 import android.content.res.Resources;
-import android.widget.TextView;
 
 import com.inovex.zabbixmobile.R;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 
 /**
  * A simple demonstration object we are creating and persisting to the database.
@@ -208,5 +207,4 @@ public class Event implements Comparable<Event>, Sharable {
 
 		return sb.toString();
 	}
-
 }

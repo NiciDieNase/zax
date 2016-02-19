@@ -32,8 +32,8 @@ import com.inovex.zabbixmobile.R;
 import com.inovex.zabbixmobile.activities.fragments.BaseSeverityFilterDetailsFragment;
 import com.inovex.zabbixmobile.activities.fragments.BaseSeverityFilterListFragment;
 import com.inovex.zabbixmobile.listeners.OnListItemSelectedListener;
-import com.inovex.zabbixmobile.listeners.OnSeverityListAdapterLoadedListener;
 import com.inovex.zabbixmobile.listeners.OnSeveritySelectedListener;
+import com.inovex.zabbixmobile.listeners.OnTriggerItemListLoadedListener;
 import com.inovex.zabbixmobile.model.Sharable;
 import com.inovex.zabbixmobile.model.TriggerSeverity;
 
@@ -49,7 +49,7 @@ import com.inovex.zabbixmobile.model.TriggerSeverity;
  */
 public abstract class BaseSeverityFilterActivity<T extends Sharable> extends
 		BaseHostGroupSpinnerActivity implements OnListItemSelectedListener,
-		OnSeveritySelectedListener, OnSeverityListAdapterLoadedListener {
+		OnSeveritySelectedListener, OnTriggerItemListLoadedListener {
 
 	private static final String TAG = BaseSeverityFilterActivity.class
 			.getSimpleName();
@@ -162,9 +162,7 @@ public abstract class BaseSeverityFilterActivity<T extends Sharable> extends
 		}
 	}
 
-	@Override
-	public void onSeverityListAdapterLoaded(TriggerSeverity severity,
-			boolean hostGroupChanged) {
+	public void onListLoaded() {
 		mListFragment.dismissProgressBar();
 		mListFragment.refreshPagerTabStrip();
 		if(mDetailsFragment != null){
@@ -187,7 +185,7 @@ public abstract class BaseSeverityFilterActivity<T extends Sharable> extends
 	 * @param reset
 	 *            whether the item position shall be reset to 0
 	 */
-	protected void selectInitialItem(boolean reset) {
+	public void selectInitialItem(boolean reset) {
 		if (reset) {
 			selectItem(0);
 		} else {

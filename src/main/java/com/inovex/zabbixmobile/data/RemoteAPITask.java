@@ -43,6 +43,8 @@ public abstract class RemoteAPITask extends AsyncTask<Void, Integer, Void> {
 	private static final String TAG = RemoteAPITask.class.getSimpleName();
 	private final ZabbixRemoteAPI api;
 	private Messenger messenger = null;
+	public ZabbixRemoteAPI zabbixAPI;
+	public DatabaseHelper mDatabaseHelper;
 
 	public RemoteAPITask(ZabbixRemoteAPI api) {
 		this.api = api;

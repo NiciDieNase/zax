@@ -17,17 +17,16 @@ This file is part of ZAX.
 
 package com.inovex.zabbixmobile.model;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
-
 import android.content.Context;
 import android.content.res.Resources;
-import android.widget.TextView;
 
 import com.inovex.zabbixmobile.R;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 @DatabaseTable(tableName = "triggers")
 public class Trigger implements Comparable<Trigger>, Sharable {
@@ -249,5 +248,4 @@ public class Trigger implements Comparable<Trigger>, Sharable {
 
 		return sb.toString();
 	}
-
 }

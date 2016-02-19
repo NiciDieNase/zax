@@ -18,6 +18,7 @@ This file is part of ZAX.
 package com.inovex.zabbixmobile.activities.fragments;
 
 import com.inovex.zabbixmobile.adapters.BaseSeverityListPagerAdapter;
+import com.inovex.zabbixmobile.adapters.EventsListPagerAdapter;
 import com.inovex.zabbixmobile.model.Event;
 
 /**

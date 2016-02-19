@@ -30,6 +30,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
 import com.inovex.zabbixmobile.R;
+import com.inovex.zabbixmobile.adapters.BaseServiceAdapter;
 import com.inovex.zabbixmobile.adapters.BaseSeverityListPagerAdapter;
 import com.inovex.zabbixmobile.listeners.OnSeveritySelectedListener;
 import com.inovex.zabbixmobile.model.TriggerSeverity;
@@ -54,6 +55,7 @@ public abstract class BaseSeverityFilterListFragment<T> extends
 	private OnSeveritySelectedListener mCallbackMain;
 
 	private boolean mProgressBarVisible = true;
+	protected TriggerSeverity mCurrentSeverity = TriggerSeverity.ALL;
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -143,6 +145,7 @@ public abstract class BaseSeverityFilterListFragment<T> extends
 	 *            the current severity
 	 */
 	public void setSeverity(TriggerSeverity severity) {
+		this.mCurrentSeverity = severity;
 		mSeverityListPagerAdapter.setCurrentPosition(severity.getPosition());
 	}
 
@@ -227,5 +230,9 @@ public abstract class BaseSeverityFilterListFragment<T> extends
 		if(mSeverityListPagerAdapter != null) {
 			mSeverityListPagerAdapter.notifyDataSetChanged();
 		}
+	}
+
+	public BaseServiceAdapter getAdapter() {
+		return this.getAdapter();
 	}
 }

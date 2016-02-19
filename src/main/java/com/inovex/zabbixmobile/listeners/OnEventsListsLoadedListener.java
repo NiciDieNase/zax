@@ -17,29 +17,27 @@ This file is part of ZAX.
 
 package com.inovex.zabbixmobile.listeners;
 
+import com.inovex.zabbixmobile.model.Event;
 import com.inovex.zabbixmobile.model.TriggerSeverity;
 
-public interface OnSeverityListAdapterLoadedListener {
+import java.util.List;
+import java.util.Map;
+
+public interface OnEventsListsLoadedListener extends OnTriggerItemListLoadedListener {
 
 	/**
 	 * Called when an adapter's content has been loaded. This method should take
 	 * care of dismissing any loading bars.
 	 * 
-	 * @param severity
-	 *            severity of the loaded data items.
+	 * @param lists
+	 *            a map containing lists for different severities
 	 * @param hostGroupChanged
 	 *            whether or not the host group has been changed (this is
 	 *            necessary because the item selection shall not be retained
 	 *            when the host group has been changed)
 	 */
-	public void onSeverityListAdapterLoaded(TriggerSeverity severity,
-			boolean hostGroupChanged);
 
-	/**
-	 * Updates the progress of loading an adapter's content.
-	 * 
-	 * @param progress
-	 *            the current progress
-	 */
-	public void onSeverityListAdapterProgressUpdate(int progress);
+	public void onEventsListsLoaded(TriggerSeverity severity, boolean hostGroupChanged);
+
+
 }

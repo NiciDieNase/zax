@@ -27,14 +27,18 @@ import com.inovex.zabbixmobile.activities.fragments.ProblemsDetailsFragment;
 import com.inovex.zabbixmobile.activities.fragments.ProblemsListFragment;
 import com.inovex.zabbixmobile.adapters.BaseSeverityListPagerAdapter;
 import com.inovex.zabbixmobile.data.RemoteAPITask;
+import com.inovex.zabbixmobile.listeners.OnProblemListLoadedListener;
 import com.inovex.zabbixmobile.model.HostGroup;
 import com.inovex.zabbixmobile.model.Trigger;
 import com.inovex.zabbixmobile.model.TriggerSeverity;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * Activity to visualize problems (triggers).
  */
-public class ProblemsActivity extends BaseSeverityFilterActivity<Trigger> {
+public class ProblemsActivity extends BaseSeverityFilterActivity<Trigger> implements OnProblemListLoadedListener {
 
 	public static final String ARG_TRIGGER_POSITION = "ARG_TRIGGER_POSITION";
 	private static final String TAG = ProblemsActivity.class.getSimpleName();
@@ -104,43 +108,27 @@ public class ProblemsActivity extends BaseSeverityFilterActivity<Trigger> {
 	protected void loadAdapterContent(boolean hostGroupChanged) {
 		if (mZabbixDataService != null) {
 			super.loadAdapterContent(hostGroupChanged);
-			if(mLoadProblemsTask != null)
-				mZabbixDataService.cancelTask(mLoadProblemsTask);
-			mLoadProblemsTask = mZabbixDataService.loadProblemsByHostGroup(
-					mSpinnerAdapter.getCurrentItemId(), hostGroupChanged, this);
+			loadProblems(hostGroupChanged);
 		}
 	}
 
 	@Override
-	public void onSeverityListAdapterLoaded(TriggerSeverity severity,
-											boolean hostGroupChanged) {
-		super.onSeverityListAdapterLoaded(severity, hostGroupChanged);
-
-		BaseSeverityListPagerAdapter<Trigger> pagerAdapter = mZabbixDataService
-				.getProblemsListPagerAdapter();
-		pagerAdapter.updateTitle(severity.getPosition(), mZabbixDataService
-				.getProblemsListAdapter(severity).getCount());
-
-		if (severity == TriggerSeverity.ALL && mTriggerPosition != -1) {
-			selectItem(mTriggerPosition);
-//			showDetailsFragment();
-			mTriggerPosition = -1;
-			return;
-		}
-		if (severity == mZabbixDataService.getProblemsListPagerAdapter()
-				.getCurrentObject()) {
-			selectInitialItem(hostGroupChanged);
-		}
+	public void onProblemListLoaded(Map<TriggerSeverity, List<Trigger>> lists, boolean hostGroupChanged) {
+		((ProblemsListFragment)mListFragment).setContent(lists, mTriggerPosition, hostGroupChanged);
 	}
 
 	@Override
 	public void refreshData() {
 		if (mZabbixDataService != null && mSpinnerAdapter != null) {
-			if(mLoadProblemsTask != null)
-				mZabbixDataService.cancelTask(mLoadProblemsTask);
-			mLoadProblemsTask = mZabbixDataService.loadProblemsByHostGroup(
-					mSpinnerAdapter.getCurrentItemId(), false, this);
+			loadProblems(false);
 		}
 		super.refreshData();
+	}
+
+	private void loadProblems(boolean hostGroupChanged) {
+		if(mLoadProblemsTask != null)
+			mZabbixDataService.cancelTask(mLoadProblemsTask);
+		mLoadProblemsTask = mZabbixDataService.loadProblemsByHostGroup(
+				mSpinnerAdapter.getCurrentItemId(), hostGroupChanged, this);
 	}
 }

@@ -30,6 +30,7 @@ import com.inovex.zabbixmobile.activities.fragments.EventsListFragment;
 import com.inovex.zabbixmobile.adapters.BaseSeverityListPagerAdapter;
 import com.inovex.zabbixmobile.data.RemoteAPITask;
 import com.inovex.zabbixmobile.listeners.OnAcknowledgeEventListener;
+import com.inovex.zabbixmobile.listeners.OnEventsListsLoadedListener;
 import com.inovex.zabbixmobile.model.Event;
 import com.inovex.zabbixmobile.model.TriggerSeverity;
 
@@ -38,7 +39,7 @@ import com.inovex.zabbixmobile.model.TriggerSeverity;
  *
  */
 public class EventsActivity extends BaseSeverityFilterActivity<Event> implements
-		OnAcknowledgeEventListener {
+		OnAcknowledgeEventListener, OnEventsListsLoadedListener {
 
 	private static final String TAG = EventsActivity.class.getSimpleName();
 	private RemoteAPITask mLoadEventsTask;
@@ -100,9 +101,7 @@ public class EventsActivity extends BaseSeverityFilterActivity<Event> implements
 	}
 
 	@Override
-	public void onSeverityListAdapterLoaded(TriggerSeverity severity,
-			boolean hostGroupChanged) {
-		super.onSeverityListAdapterLoaded(severity, hostGroupChanged);
+	public void onEventsListsLoaded(TriggerSeverity severity, boolean hostGroupChanged) {
 
 		BaseSeverityListPagerAdapter<Event> pagerAdapter = mZabbixDataService
 				.getEventsListPagerAdapter();
