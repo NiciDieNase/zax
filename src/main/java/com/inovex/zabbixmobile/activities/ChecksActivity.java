@@ -31,6 +31,7 @@ import com.inovex.zabbixmobile.R;
 import com.inovex.zabbixmobile.activities.fragments.ChecksApplicationsFragment;
 import com.inovex.zabbixmobile.activities.fragments.ChecksHostsFragment;
 import com.inovex.zabbixmobile.activities.fragments.ChecksItemsFragment;
+import com.inovex.zabbixmobile.data.RemoteAPITask;
 import com.inovex.zabbixmobile.listeners.OnApplicationsLoadedListener;
 import com.inovex.zabbixmobile.listeners.OnChecksItemSelectedListener;
 import com.inovex.zabbixmobile.listeners.OnHostsLoadedListener;
@@ -52,6 +53,7 @@ public class ChecksActivity extends BaseHostGroupSpinnerActivity implements
 	protected ChecksHostsFragment mHostListFragment;
 	protected ChecksApplicationsFragment mApplicationsFragment;
 	protected ChecksItemsFragment mItemDetailsFragment;
+	private RemoteAPITask mLoadApplicationsTask;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -77,15 +79,6 @@ public class ChecksActivity extends BaseHostGroupSpinnerActivity implements
 	protected void onResume() {
 		super.onResume();
 		mNavigationView.getMenu().findItem(R.id.navigation_item_checks).setChecked(true);
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		if (mZabbixDataService != null) {
-			mZabbixDataService.cancelLoadApplicationsTask();
-			mZabbixDataService.cancelLoadItemsTask();
-		}
 	}
 
 	@Override
@@ -120,8 +113,15 @@ public class ChecksActivity extends BaseHostGroupSpinnerActivity implements
 		mApplicationsFragment.showApplicationsProgressBar();
 		showApplicationsFragment();
 		mApplicationsFragment.selectApplication(0);
-		mZabbixDataService.loadApplicationsByHostId(id, this, true);
+		loadApplications(id);
 
+	}
+
+	private void loadApplications(long id) {
+		if(mLoadApplicationsTask != null)
+			mZabbixDataService.cancelTask(mLoadApplicationsTask);
+		mLoadApplicationsTask = mZabbixDataService.loadApplicationsByHostId(id, this, true);
+		mRemoteAPITasks.add(mLoadApplicationsTask);
 	}
 
 	@Override
@@ -240,8 +240,7 @@ public class ChecksActivity extends BaseHostGroupSpinnerActivity implements
 	public void onHostsLoaded() {
 		Host h = selectInitialHost(false);
 		if(h != null){
-			mZabbixDataService.loadApplicationsByHostId(h.getId(), this, false);
-			mHostListFragment.dismissLoadingSpinner();
+			loadApplications(h.getId());
 		}
 	}
 

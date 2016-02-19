@@ -87,13 +87,6 @@ public class ScreensActivity extends BaseActivity implements
 	}
 
 	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		if (mZabbixDataService != null)
-			mZabbixDataService.cancelLoadGraphsTask();
-	}
-
-	@Override
 	public void onScreenSelected(Screen screen) {
 //		mToolbar.setSubtitle(screen.getName());
 		mDetailsFragment.setScreen(screen);

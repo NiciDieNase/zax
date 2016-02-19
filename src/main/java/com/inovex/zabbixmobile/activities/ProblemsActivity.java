@@ -26,6 +26,7 @@ import com.inovex.zabbixmobile.R;
 import com.inovex.zabbixmobile.activities.fragments.ProblemsDetailsFragment;
 import com.inovex.zabbixmobile.activities.fragments.ProblemsListFragment;
 import com.inovex.zabbixmobile.adapters.BaseSeverityListPagerAdapter;
+import com.inovex.zabbixmobile.data.RemoteAPITask;
 import com.inovex.zabbixmobile.model.HostGroup;
 import com.inovex.zabbixmobile.model.Trigger;
 import com.inovex.zabbixmobile.model.TriggerSeverity;
@@ -43,6 +44,7 @@ public class ProblemsActivity extends BaseSeverityFilterActivity<Trigger> {
 	// the push notification
 	private boolean mStartFromNotification = false;
 	private int mTriggerPosition = -1;
+	private RemoteAPITask mLoadProblemsTask;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -85,15 +87,6 @@ public class ProblemsActivity extends BaseSeverityFilterActivity<Trigger> {
 	}
 
 	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		if (mZabbixDataService != null) {
-			mZabbixDataService.cancelLoadProblemsTask();
-			mZabbixDataService.cancelLoadHistoryDetailsTasks();
-		}
-	}
-
-	@Override
 	public void selectHostGroupInSpinner(int position, long itemId) {
 		super.selectHostGroupInSpinner(position, itemId);
 		// if the activity was started using the intent to display a particular
@@ -111,7 +104,9 @@ public class ProblemsActivity extends BaseSeverityFilterActivity<Trigger> {
 	protected void loadAdapterContent(boolean hostGroupChanged) {
 		if (mZabbixDataService != null) {
 			super.loadAdapterContent(hostGroupChanged);
-			mZabbixDataService.loadProblemsByHostGroup(
+			if(mLoadProblemsTask != null)
+				mZabbixDataService.cancelTask(mLoadProblemsTask);
+			mLoadProblemsTask = mZabbixDataService.loadProblemsByHostGroup(
 					mSpinnerAdapter.getCurrentItemId(), hostGroupChanged, this);
 		}
 	}
@@ -141,7 +136,9 @@ public class ProblemsActivity extends BaseSeverityFilterActivity<Trigger> {
 	@Override
 	public void refreshData() {
 		if (mZabbixDataService != null && mSpinnerAdapter != null) {
-			mZabbixDataService.loadProblemsByHostGroup(
+			if(mLoadProblemsTask != null)
+				mZabbixDataService.cancelTask(mLoadProblemsTask);
+			mLoadProblemsTask = mZabbixDataService.loadProblemsByHostGroup(
 					mSpinnerAdapter.getCurrentItemId(), false, this);
 		}
 		super.refreshData();

@@ -28,6 +28,7 @@ import com.inovex.zabbixmobile.activities.fragments.BaseSeverityFilterListFragme
 import com.inovex.zabbixmobile.activities.fragments.EventsDetailsFragment;
 import com.inovex.zabbixmobile.activities.fragments.EventsListFragment;
 import com.inovex.zabbixmobile.adapters.BaseSeverityListPagerAdapter;
+import com.inovex.zabbixmobile.data.RemoteAPITask;
 import com.inovex.zabbixmobile.listeners.OnAcknowledgeEventListener;
 import com.inovex.zabbixmobile.model.Event;
 import com.inovex.zabbixmobile.model.TriggerSeverity;
@@ -40,6 +41,7 @@ public class EventsActivity extends BaseSeverityFilterActivity<Event> implements
 		OnAcknowledgeEventListener {
 
 	private static final String TAG = EventsActivity.class.getSimpleName();
+	private RemoteAPITask mLoadEventsTask;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -63,15 +65,6 @@ public class EventsActivity extends BaseSeverityFilterActivity<Event> implements
 	protected void onResume() {
 		super.onResume();
 		mNavigationView.getMenu().findItem(R.id.navigation_item_events).setChecked(true);
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		if (mZabbixDataService != null) {
-			mZabbixDataService.cancelLoadEventsTask();
-			mZabbixDataService.cancelLoadHistoryDetailsTasks();
-		}
 	}
 
 	@Override
@@ -103,8 +96,7 @@ public class EventsActivity extends BaseSeverityFilterActivity<Event> implements
 	protected void loadAdapterContent(boolean hostGroupChanged) {
 		Log.d(TAG, "loadAdapterContent");
 		super.loadAdapterContent(hostGroupChanged);
-		mZabbixDataService.loadEventsByHostGroup(
-				mSpinnerAdapter.getCurrentItemId(), hostGroupChanged, this);
+		loadEvents(hostGroupChanged);
 	}
 
 	@Override
@@ -126,9 +118,17 @@ public class EventsActivity extends BaseSeverityFilterActivity<Event> implements
 	@Override
 	public void refreshData() {
 		if(mZabbixDataService != null && mSpinnerAdapter != null){
-			mZabbixDataService.loadEventsByHostGroup(
-					mSpinnerAdapter.getCurrentItemId(), false, this);
+			loadEvents(false);
 		}
 		super.refreshData();
+	}
+
+	private void loadEvents(boolean hostGroupChanged) {
+		if (mLoadEventsTask != null) {
+			mZabbixDataService.cancelTask(mLoadEventsTask);
+		}
+		mLoadEventsTask = mZabbixDataService.loadEventsByHostGroup(
+				mSpinnerAdapter.getCurrentItemId(), hostGroupChanged, this);
+		mRemoteAPITasks.add(mLoadEventsTask);
 	}
 }

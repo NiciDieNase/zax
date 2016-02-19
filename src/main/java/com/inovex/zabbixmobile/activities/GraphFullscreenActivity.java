@@ -37,6 +37,7 @@ import android.view.WindowManager;
 import android.widget.LinearLayout;
 
 import com.inovex.zabbixmobile.R;
+import com.inovex.zabbixmobile.data.RemoteAPITask;
 import com.inovex.zabbixmobile.data.ZabbixDataService;
 import com.inovex.zabbixmobile.data.ZabbixDataService.ZabbixDataBinder;
 import com.inovex.zabbixmobile.listeners.OnGraphDataLoadedListener;
@@ -57,6 +58,7 @@ public class GraphFullscreenActivity extends AppCompatActivity implements
 	private long mGraphId;
 
 	protected ZabbixDataService mZabbixDataService;
+	private RemoteAPITask mLoadHistoryDetailsTask;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +89,12 @@ public class GraphFullscreenActivity extends AppCompatActivity implements
 		mLayout = new LinearLayout(this);
 
 		setContentView(mLayout);
+	}
+
+	@Override
+	protected void onDestroy() {
+		mZabbixDataService.cancelTask(mLoadHistoryDetailsTask);
+		super.onDestroy();
 	}
 
 	/**
@@ -128,7 +136,7 @@ public class GraphFullscreenActivity extends AppCompatActivity implements
 			final Item item = mZabbixDataService.getItemById(mItemId);
 			if (item == null)
 				return;
-			mZabbixDataService.loadHistoryDetailsByItem(item, false,
+			mLoadHistoryDetailsTask = mZabbixDataService.loadHistoryDetailsByItem(item, false,
 					new OnGraphDataLoadedListener() {
 						@Override
 						public void onGraphDataLoaded() {

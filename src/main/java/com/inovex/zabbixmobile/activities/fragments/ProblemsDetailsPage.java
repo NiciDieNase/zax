@@ -27,7 +27,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.inovex.zabbixmobile.R;
+import com.inovex.zabbixmobile.activities.BaseActivity;
 import com.inovex.zabbixmobile.adapters.EventsDetailsPagerAdapter;
+import com.inovex.zabbixmobile.data.RemoteAPITask;
 import com.inovex.zabbixmobile.model.Item;
 import com.inovex.zabbixmobile.model.Trigger;
 
@@ -48,6 +50,7 @@ public class ProblemsDetailsPage extends BaseDetailsPage {
 	private static final String ARG_TRIGGER_ID = "arg_trigger_id";
 	Trigger mTrigger;
 	private long mTriggerId;
+	private RemoteAPITask mLoadHistoryDetailsTask;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -107,8 +110,7 @@ public class ProblemsDetailsPage extends BaseDetailsPage {
 		if (mTrigger != null) {
 			fillDetailsText();
 			if (!mHistoryDetailsImported && mTrigger.getItem() != null)
-				mZabbixDataService.loadHistoryDetailsByItem(mTrigger.getItem(),
-						false, this);
+				loadHistoryDetails();
 		}
 	}
 
@@ -121,9 +123,21 @@ public class ProblemsDetailsPage extends BaseDetailsPage {
 	public void setTrigger(Trigger trigger) {
 		this.mTrigger = trigger;
 		this.mTriggerId = trigger.getId();
-		if (!mHistoryDetailsImported && getView() != null)
-			mZabbixDataService.loadHistoryDetailsByItem(mTrigger.getItem(),
-					false, this);
+		if (!mHistoryDetailsImported && getView() != null) {
+			loadHistoryDetails();
+		}
+	}
+
+	private void loadHistoryDetails() {
+		if(mLoadHistoryDetailsTask!= null)
+			mZabbixDataService.cancelTask(mLoadHistoryDetailsTask);
+		mLoadHistoryDetailsTask = mZabbixDataService.loadHistoryDetailsByItem(mTrigger.getItem(),
+				false, this);
+		try{
+			((BaseActivity)this.getActivity()).addTask(mLoadHistoryDetailsTask);
+		} catch (ClassCastException e){
+			e.printStackTrace();
+		}
 	}
 
 	@Override

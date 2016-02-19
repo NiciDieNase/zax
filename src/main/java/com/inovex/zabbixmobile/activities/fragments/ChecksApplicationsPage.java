@@ -30,6 +30,7 @@ import android.widget.TextView;
 
 import com.inovex.zabbixmobile.R;
 import com.inovex.zabbixmobile.adapters.ChecksItemsListAdapter;
+import com.inovex.zabbixmobile.data.RemoteAPITask;
 import com.inovex.zabbixmobile.listeners.OnChecksItemSelectedListener;
 import com.inovex.zabbixmobile.listeners.OnItemsLoadedListener;
 
@@ -48,6 +49,7 @@ public class ChecksApplicationsPage extends BaseServiceConnectedListFragment imp
 	private ChecksItemsListAdapter mListAdapter;
 	private long mApplicationID;
 	private boolean mListLoadingSpinnerVisible;
+	private RemoteAPITask mLoadItemsTask;
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -121,7 +123,7 @@ public class ChecksApplicationsPage extends BaseServiceConnectedListFragment imp
 	@Override
 	protected void setupListAdapter() {
 		if(mListAdapter == null){
-			mZabbixDataService.loadItemsByApplicationId(
+			mLoadItemsTask = mZabbixDataService.loadItemsByApplicationId(
 					mApplicationID, this);
 			showListLoadingSpinner();
 		}

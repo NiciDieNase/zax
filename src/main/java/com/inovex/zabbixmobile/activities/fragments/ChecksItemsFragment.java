@@ -34,6 +34,7 @@ import android.widget.TextView;
 
 import com.inovex.zabbixmobile.R;
 import com.inovex.zabbixmobile.adapters.EventsDetailsPagerAdapter;
+import com.inovex.zabbixmobile.data.RemoteAPITask;
 import com.inovex.zabbixmobile.model.Item;
 
 import java.text.SimpleDateFormat;
@@ -56,6 +57,7 @@ public class ChecksItemsFragment extends BaseDetailsPage {
 	private MenuItem mMenuItemShare;
 
 	private ShareActionProvider mShareActionProvider;
+	private RemoteAPITask mLoadHistryDetailsTask;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -95,7 +97,8 @@ public class ChecksItemsFragment extends BaseDetailsPage {
 	public void onServiceConnected(ComponentName name, IBinder service) {
 		super.onServiceConnected(name, service);
 		if (mItem != null)
-			mZabbixDataService.loadHistoryDetailsByItem(mItem, true, this);
+			mZabbixDataService.cancelTask(mLoadHistryDetailsTask);
+		mLoadHistryDetailsTask = mZabbixDataService.loadHistoryDetailsByItem(mItem, true, this);
 	}
 
 	@Override
@@ -146,7 +149,9 @@ public class ChecksItemsFragment extends BaseDetailsPage {
 		if (mZabbixDataService != null && item != null) {
 			fillDetailsText();
 			showGraphProgressBar();
-			mZabbixDataService.loadHistoryDetailsByItem(mItem, true, this);
+			if(mLoadHistryDetailsTask != null)
+				mZabbixDataService.cancelTask(mLoadHistryDetailsTask);
+			mLoadHistryDetailsTask = mZabbixDataService.loadHistoryDetailsByItem(mItem, true, this);
 		}
 	}
 

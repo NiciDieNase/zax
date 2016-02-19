@@ -54,6 +54,7 @@ import android.widget.TextView;
 import com.inovex.zabbixmobile.OnSettingsMigratedReceiver;
 import com.inovex.zabbixmobile.R;
 import com.inovex.zabbixmobile.adapters.BaseServiceAdapter;
+import com.inovex.zabbixmobile.data.RemoteAPITask;
 import com.inovex.zabbixmobile.data.ZabbixDataService;
 import com.inovex.zabbixmobile.data.ZabbixDataService.OnLoginProgressListener;
 import com.inovex.zabbixmobile.data.ZabbixDataService.ZabbixDataBinder;
@@ -64,6 +65,8 @@ import com.inovex.zabbixmobile.widget.WidgetUpdateBroadcastReceiver;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -124,6 +127,8 @@ public abstract class BaseActivity extends AppCompatActivity implements
 	private ImageButton mServerSelectButton;
 	private View mServerNameLayout;
 	private long persistedServerSelection;
+
+	protected Set<RemoteAPITask> mRemoteAPITasks = new HashSet<RemoteAPITask>();
 
 
 	@Override
@@ -523,6 +528,9 @@ public abstract class BaseActivity extends AppCompatActivity implements
 	 */
 	@Override
 	protected void onDestroy() {
+		for(RemoteAPITask task : mRemoteAPITasks){
+			mZabbixDataService.cancelTask(task);
+		}
 		super.onDestroy();
 		Log.d(TAG, "onDestroy");
 
@@ -710,4 +718,7 @@ public abstract class BaseActivity extends AppCompatActivity implements
 		this.mServerNameView.setText(name);
 	}
 
+	public void addTask(RemoteAPITask task){
+		this.mRemoteAPITasks.add(task);
+	}
 }

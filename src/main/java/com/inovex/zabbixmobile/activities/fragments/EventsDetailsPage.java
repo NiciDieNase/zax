@@ -29,6 +29,7 @@ import android.widget.TextView;
 
 import com.inovex.zabbixmobile.R;
 import com.inovex.zabbixmobile.adapters.EventsDetailsPagerAdapter;
+import com.inovex.zabbixmobile.data.RemoteAPITask;
 import com.inovex.zabbixmobile.model.Event;
 import com.inovex.zabbixmobile.model.Item;
 import com.inovex.zabbixmobile.model.Trigger;
@@ -52,6 +53,7 @@ public class EventsDetailsPage extends BaseDetailsPage {
 	private long mEventId = -1;
 
 	private boolean mHistoryDetailsImported = false;
+	private RemoteAPITask mLoadHistoryDetailsTask;
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -148,10 +150,18 @@ public class EventsDetailsPage extends BaseDetailsPage {
 		if (mEvent != null) {
 			fillDetailsText();
 			if (!mHistoryDetailsImported && mEvent.getTrigger() != null
-					&& mEvent.getTrigger().getItem() != null)
-				mZabbixDataService.loadHistoryDetailsByItem(mEvent.getTrigger()
-						.getItem(), false, this);
+					&& mEvent.getTrigger().getItem() != null){
+				loadHistoryDetails();
+			}
 		}
+	}
+
+	private void loadHistoryDetails() {
+		if(mLoadHistoryDetailsTask != null && mZabbixDataService != null) {
+			mZabbixDataService.cancelTask(mLoadHistoryDetailsTask);
+		}
+		mLoadHistoryDetailsTask = mZabbixDataService.loadHistoryDetailsByItem(mEvent.getTrigger()
+				.getItem(), false, this);
 	}
 
 	@Override
@@ -164,9 +174,9 @@ public class EventsDetailsPage extends BaseDetailsPage {
 	public void setEvent(Event event) {
 		this.mEvent = event;
 		this.mEventId = event.getId();
-		if (!mHistoryDetailsImported && getView() != null)
-			mZabbixDataService.loadHistoryDetailsByItem(mEvent.getTrigger()
-					.getItem(), false, this);
+		if (!mHistoryDetailsImported && getView() != null){
+			loadHistoryDetails();
+		}
 	}
 
 	@Override

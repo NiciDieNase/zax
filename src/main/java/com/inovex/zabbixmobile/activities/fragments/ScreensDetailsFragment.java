@@ -27,6 +27,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.inovex.zabbixmobile.R;
+import com.inovex.zabbixmobile.activities.BaseActivity;
+import com.inovex.zabbixmobile.data.RemoteAPITask;
 import com.inovex.zabbixmobile.listeners.OnGraphsLoadedListener;
 import com.inovex.zabbixmobile.model.Graph;
 import com.inovex.zabbixmobile.model.Screen;
@@ -44,6 +46,7 @@ public class ScreensDetailsFragment extends BaseServiceConnectedFragment
 
 	private Screen mScreen;
 	private boolean mProgressBarVisible = true;
+	private RemoteAPITask mLoadGraphesTask;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -178,7 +181,12 @@ public class ScreensDetailsFragment extends BaseServiceConnectedFragment
 	 */
 	public void loadGraphs() {
 		if (mZabbixDataService != null && mScreen != null) {
-			mZabbixDataService.loadGraphsByScreen(mScreen, this);
+			mLoadGraphesTask = mZabbixDataService.loadGraphsByScreen(mScreen, this);
+			try{
+				((BaseActivity)this.getActivity()).addTask(mLoadGraphesTask);
+			} catch (ClassCastException e){
+				e.printStackTrace();
+			}
 		}
 	}
 

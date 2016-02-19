@@ -79,10 +79,8 @@ import com.j256.ormlite.android.apptools.OpenHelperManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Bound service maintaining the connection with the Zabbix API as well as the
@@ -140,14 +138,6 @@ public class ZabbixDataService extends Service {
 
 	// Screens
 	private ScreensListAdapter mScreensListAdapter;
-
-	// API-Tasks
-	private Set<RemoteAPITask> mCurrentLoadHistoryDetailsTasks;
-	private RemoteAPITask mCurrentLoadEventsTask;
-	private RemoteAPITask mCurrentLoadProblemsTask;
-	private RemoteAPITask mCurrentLoadApplicationsTask;
-	private RemoteAPITask mCurrentLoadItemsTask;
-	private RemoteAPITask mCurrentLoadGraphsTask;
 
 	private Context mActivityContext;
 	private LayoutInflater mInflater;
@@ -564,10 +554,6 @@ public class ZabbixDataService extends Service {
 		mChecksItemsListAdapters = new HashMap<String,ChecksItemsListAdapter>();
 
 		mScreensListAdapter = new ScreensListAdapter(this);
-
-		mCurrentLoadHistoryDetailsTasks = new HashSet<RemoteAPITask>();
-
-
 	}
 
 	/**
@@ -584,13 +570,13 @@ public class ZabbixDataService extends Service {
 	 * @param callback
 	 *            listener to be called when the adapters have been updated
 	 */
-	public void loadEventsByHostGroup(final long hostGroupId,
+	public RemoteAPITask loadEventsByHostGroup(final long hostGroupId,
 			final boolean hostGroupChanged,
 			final OnSeverityListAdapterLoadedListener callback) {
 
-		cancelTask(mCurrentLoadEventsTask);
+//		cancelTask(mCurrentLoadEventsTask);
 
-		mCurrentLoadEventsTask = new RemoteAPITask(mRemoteAPI) {
+		RemoteAPITask mCurrentLoadEventsTask = new RemoteAPITask(mRemoteAPI) {
 
 			private Map<TriggerSeverity, List<Event>> events;
 
@@ -649,7 +635,7 @@ public class ZabbixDataService extends Service {
 		};
 
 		mCurrentLoadEventsTask.execute();
-
+		return mCurrentLoadEventsTask;
 	}
 
 	/**
@@ -666,12 +652,12 @@ public class ZabbixDataService extends Service {
 	 * @param callback
 	 *            listener to be called when the adapters have been updated
 	 */
-	public void loadProblemsByHostGroup(final long hostGroupId,
+	public RemoteAPITask loadProblemsByHostGroup(final long hostGroupId,
 			final boolean hostGroupChanged,
 			final OnSeverityListAdapterLoadedListener callback) {
 
-		cancelTask(mCurrentLoadProblemsTask);
-		mCurrentLoadProblemsTask = new RemoteAPITask(mRemoteAPI) {
+//		cancelTask(currentLoadProblemsTask);
+		RemoteAPITask currentLoadProblemsTask = new RemoteAPITask(mRemoteAPI) {
 
 			private Map<TriggerSeverity, List<Trigger>> triggers;
 
@@ -736,8 +722,8 @@ public class ZabbixDataService extends Service {
 
 		};
 
-		mCurrentLoadProblemsTask.execute();
-
+		currentLoadProblemsTask.execute();
+		return currentLoadProblemsTask;
 	}
 
 	/**
@@ -854,12 +840,12 @@ public class ZabbixDataService extends Service {
 	 *            flag indicating if the application selection shall be reset
 	 *            when the data is loaded
 	 */
-	public void loadApplicationsByHostId(final long hostId,
+	public RemoteAPITask loadApplicationsByHostId(final long hostId,
 			final OnApplicationsLoadedListener callback,
 			final boolean resetSelection) {
 
-		cancelTask(mCurrentLoadApplicationsTask);
-		mCurrentLoadApplicationsTask = new RemoteAPITask(mRemoteAPI) {
+//		cancelTask(currentLoadApplicationsTask);
+		RemoteAPITask currentLoadApplicationsTask = new RemoteAPITask(mRemoteAPI) {
 
 			List<Application> applications;
 
@@ -905,7 +891,8 @@ public class ZabbixDataService extends Service {
 
 		};
 
-		mCurrentLoadApplicationsTask.execute();
+		currentLoadApplicationsTask.execute();
+		return currentLoadApplicationsTask;
 	}
 
 	/**
@@ -915,10 +902,10 @@ public class ZabbixDataService extends Service {
 	 * loaded together with the applications.
 	 *
 	 */
-	public void loadItemsByApplicationId(final long applicationId,
+	public RemoteAPITask loadItemsByApplicationId(final long applicationId,
 			final OnItemsLoadedListener callback) {
-//		cancelTask(mCurrentLoadItemsTask);
-		mCurrentLoadItemsTask = new RemoteAPITask(mRemoteAPI) {
+//		cancelTask(currentLoadItemsTask);
+		RemoteAPITask currentLoadItemsTask = new RemoteAPITask(mRemoteAPI) {
 
 			List<Item> items;
 			Application application;
@@ -965,7 +952,8 @@ public class ZabbixDataService extends Service {
 			}
 
 		};
-		mCurrentLoadItemsTask.execute();
+		currentLoadItemsTask.execute();
+		return currentLoadItemsTask;
 	}
 
 	public void loadZabbixServers() {
@@ -984,13 +972,10 @@ public class ZabbixDataService extends Service {
 	 *
 	 * @param item
 	 */
-	public void loadHistoryDetailsByItem(final Item item,
+	public RemoteAPITask loadHistoryDetailsByItem(final Item item,
 			boolean cancelPreviousTasks,
 			final OnGraphDataLoadedListener callback) {
 		Log.d(TAG, "Loading history for item " + item.toString());
-		if (cancelPreviousTasks) {
-			cancelLoadHistoryDetailsTasks();
-		}
 
 		RemoteAPITask currentTask = new RemoteAPITask(mRemoteAPI) {
 
@@ -1027,9 +1012,8 @@ public class ZabbixDataService extends Service {
 
 		};
 
-		mCurrentLoadHistoryDetailsTasks.add(currentTask);
-
 		currentTask.execute();
+		return currentTask;
 	}
 
 	/**
@@ -1076,10 +1060,9 @@ public class ZabbixDataService extends Service {
 	 * @param screen
 	 * @param callback
 	 */
-	public void loadGraphsByScreen(final Screen screen,
+	public RemoteAPITask loadGraphsByScreen(final Screen screen,
 			final OnGraphsLoadedListener callback) {
-		cancelTask(mCurrentLoadGraphsTask);
-		mCurrentLoadGraphsTask = new RemoteAPITask(mRemoteAPI) {
+		RemoteAPITask currentLoadGraphsTask = new RemoteAPITask(mRemoteAPI) {
 
 			@Override
 			protected void executeTask() throws ZabbixLoginRequiredException,
@@ -1122,7 +1105,8 @@ public class ZabbixDataService extends Service {
 			}
 
 		};
-		mCurrentLoadGraphsTask.execute();
+		currentLoadGraphsTask.execute();
+		return currentLoadGraphsTask;
 	}
 
 	/**
@@ -1162,57 +1146,13 @@ public class ZabbixDataService extends Service {
 		}.execute();
 	}
 
-	private void cancelTask(RemoteAPITask task) {
+	public void cancelTask(RemoteAPITask task) {
 		if (task != null && task.getStatus() != AsyncTask.Status.FINISHED) {
 			if (task.cancel(true))
 				Log.d(TAG, "Cancelled task: " + task);
 			else
 				Log.d(TAG, "Task was already done: " + task);
 		}
-	}
-
-	/**
-	 * Cancels all tasks currently loading events.
-	 */
-	public void cancelLoadEventsTask() {
-		cancelTask(mCurrentLoadEventsTask);
-	}
-
-	/**
-	 * Cancels all tasks currently loading problems.
-	 */
-	public void cancelLoadProblemsTask() {
-		cancelTask(mCurrentLoadProblemsTask);
-	}
-
-	/**
-	 * Cancels all tasks currently loading problems.
-	 */
-	public void cancelLoadHistoryDetailsTasks() {
-		for (RemoteAPITask task : mCurrentLoadHistoryDetailsTasks)
-			cancelTask(task);
-		mCurrentLoadHistoryDetailsTasks.clear();
-	}
-
-	/**
-	 * Cancels the task currently loading applications.
-	 */
-	public void cancelLoadApplicationsTask() {
-		cancelTask(mCurrentLoadApplicationsTask);
-	}
-
-	/**
-	 * Cancels the task currently loading items.
-	 */
-	public void cancelLoadItemsTask() {
-		cancelTask(mCurrentLoadItemsTask);
-	}
-
-	/**
-	 * Cancels the task currently loading graphs.
-	 */
-	public void cancelLoadGraphsTask() {
-		cancelTask(mCurrentLoadGraphsTask);
 	}
 
 	/**
