@@ -107,7 +107,7 @@ public abstract class BaseHostGroupSpinnerActivity extends BaseActivity
 		}
 
 		// reload adapter
-		if (mZabbixDataService != null && mZabbixDataService.isLoggedIn())
+		if (mZabbixDataService != null && mZabbixDataService.isLoggedIn(this.getPersistedServerSelection()))
 			loadAdapterContent(false);
 	}
 
@@ -124,7 +124,7 @@ public abstract class BaseHostGroupSpinnerActivity extends BaseActivity
 		super.onServiceConnected(className, binder);
 
 		// set up spinner adapter
-		mSpinnerAdapter = mZabbixDataService.getHostGroupSpinnerAdapter();
+		mSpinnerAdapter = mZabbixDataService.getHostGroupSpinnerAdapter(this.persistedServerSelection);
 		mSpinnerAdapter.setCallback(this);
 
 		mOnNavigationListener = new SpinnerNavigationListener();
@@ -135,7 +135,7 @@ public abstract class BaseHostGroupSpinnerActivity extends BaseActivity
 			mHostgroupSpinner.setAdapter(mSpinnerAdapter);
 		}
 
-		if (mZabbixDataService.isLoggedIn())
+		if (mZabbixDataService.isLoggedIn(this.getPersistedServerSelection()))
 			loadAdapterContent(false);
 	}
 

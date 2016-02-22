@@ -36,7 +36,6 @@ import com.inovex.zabbixmobile.activities.fragments.ProblemsDetailsFragment;
 import com.inovex.zabbixmobile.activities.fragments.ProblemsListPage;
 import com.inovex.zabbixmobile.activities.fragments.ScreensListFragment;
 import com.inovex.zabbixmobile.adapters.BaseServiceAdapter;
-import com.inovex.zabbixmobile.adapters.BaseServicePagerAdapter;
 import com.inovex.zabbixmobile.adapters.BaseSeverityListPagerAdapter;
 import com.inovex.zabbixmobile.adapters.BaseSeverityPagerAdapter;
 import com.inovex.zabbixmobile.adapters.ChecksApplicationsPagerAdapter;
@@ -112,34 +111,33 @@ public class ZabbixDataService extends Service {
 
 	private DatabaseHelper mDatabaseHelper;
 
-	private HostGroupsSpinnerAdapter mHostGroupsSpinnerAdapter;
-
 	/**
 	 * Adapters maintained by {@link ZabbixDataService}.
 	 */
+	private Map<Long,HostGroupsSpinnerAdapter> mHostGroupsSpinnerAdapter = new HashMap<>();
 
 	// Servers
 	private ServersListSelectionAdapter mServersListSelectionAdapter;
 	private ServersListManagementAdapter mServersListManagementAdapter;
 
 	// Events
-	private EventsListPagerAdapter mEventsListPagerAdapter;
-	private HashMap<TriggerSeverity, EventsListAdapter> mEventsListAdapters;
-	private HashMap<TriggerSeverity, EventsDetailsPagerAdapter> mEventsDetailsPagerAdapters;
+	private Map<Long,EventsListPagerAdapter> mEventsListPagerAdapter = new HashMap<>();
+	private Map<Long,Map<TriggerSeverity, EventsListAdapter>> mEventsListAdapters = new HashMap<>();
+	private Map<Long,Map<TriggerSeverity, EventsDetailsPagerAdapter>> mEventsDetailsPagerAdapters = new HashMap<>();
 
 	// Problems
-	private ProblemsListPagerAdapter mProblemsListPagerAdapter;
-	private ProblemsListAdapter mProblemsMainListAdapter;
-	private HashMap<TriggerSeverity, ProblemsListAdapter> mProblemsListAdapters;
-	private HashMap<TriggerSeverity, ProblemsDetailsPagerAdapter> mProblemsDetailsPagerAdapters;
+	private Map<Long,ProblemsListPagerAdapter> mProblemsListPagerAdapter = new HashMap<>();
+	private Map<Long,ProblemsListAdapter> mProblemsMainListAdapter = new HashMap<>();
+	private Map<Long,Map<TriggerSeverity, ProblemsListAdapter>> mProblemsListAdapters = new HashMap<>();
+	private Map<Long,Map<TriggerSeverity, ProblemsDetailsPagerAdapter>> mProblemsDetailsPagerAdapters = new HashMap<>();
 
 	// Checks
-	private HostsListAdapter mHostsListAdapter;
-	private ChecksApplicationsPagerAdapter mChecksApplicationsPagerAdapter;
-	private HashMap<String, ChecksItemsListAdapter> mChecksItemsListAdapters;
+	private Map<Long,HostsListAdapter> mHostsListAdapter = new HashMap<>();
+	private Map<Long,ChecksApplicationsPagerAdapter> mChecksApplicationsPagerAdapter = new HashMap<>();
+	private Map<Long,HashMap<String, ChecksItemsListAdapter>> mChecksItemsListAdapters = new HashMap<>();
 
 	// Screens
-	private ScreensListAdapter mScreensListAdapter;
+	private Map<Long,ScreensListAdapter> mScreensListAdapter = new HashMap<>();
 
 	// API-Tasks
 	private Set<RemoteAPITask> mCurrentLoadHistoryDetailsTasks;
@@ -151,7 +149,6 @@ public class ZabbixDataService extends Service {
 
 	private Context mActivityContext;
 	private LayoutInflater mInflater;
-	private ZabbixRemoteAPI mRemoteAPI;
 	private Map<Long,ZabbixRemoteAPI> zabbixAPIs = new HashMap<>();
 	private int mBindings = 0;
 	private long mCurrentZabbixServerId;
@@ -169,8 +166,8 @@ public class ZabbixDataService extends Service {
 		}
 	}
 
-	public boolean isLoggedIn() {
-		return mRemoteAPI.isLoggedIn();
+	public boolean isLoggedIn(long serverId) {
+		return zabbixAPIs.get(serverId).isLoggedIn();
 	}
 
 	/**
@@ -184,45 +181,53 @@ public class ZabbixDataService extends Service {
 
 		Log.d(TAG, "clearing all data");
 
-		mDatabaseHelper.clearAllData();
+		clearCache();
+
+		// clear adapters
+
+//		ArrayList<BaseServiceAdapter<?>> listAdapters = new ArrayList<BaseServiceAdapter<?>>();
+//		ArrayList<BaseServicePagerAdapter<?>> pagerAdapters = new ArrayList<BaseServicePagerAdapter<?>>();
+//		for(long id : zabbixAPIs.keySet()){
+//
+//			listAdapters.add(mHostGroupsSpinnerAdapter.get(id));
+//			listAdapters.addAll(mEventsListAdapters.get(id).values());
+//			listAdapters.addAll(mProblemsListAdapters.get(id).values());
+//			listAdapters.add(mProblemsMainListAdapter.get(id));
+//			listAdapters.add(mHostsListAdapter.get(id));
+//			listAdapters.addAll(mChecksItemsListAdapters.get(id).values());
+//			listAdapters.add(mScreensListAdapter.get(id));
+//
+//
+//			pagerAdapters.addAll(mEventsDetailsPagerAdapters.get(id).values());
+//			pagerAdapters.addAll(mProblemsDetailsPagerAdapters.get(id).values());
+//			pagerAdapters.add(mChecksApplicationsPagerAdapter.get(id));
+//
+//		}
+//		for (BaseServicePagerAdapter<?> adapter : pagerAdapters) {
+//			adapter.clear();
+//			adapter.notifyDataSetChanged();
+//		}
+//		for (BaseServiceAdapter<?> adapter : listAdapters) {
+//			adapter.clear();
+//			adapter.notifyDataSetChanged();
+//		}
+
+		if(logout){
+			zabbixAPIs.get(mCurrentZabbixServerId).logout();
+			zabbixAPIs.remove(zabbixAPIs.get(mCurrentZabbixServerId));
+			zabbixAPIs.put(mCurrentZabbixServerId, new ZabbixRemoteAPI(this.getApplicationContext(),
+					mDatabaseHelper, mCurrentZabbixServerId, null));
+			zabbixAPIs.put(mCurrentZabbixServerId,zabbixAPIs.get(mCurrentZabbixServerId));
+			this.performZabbixLogin(mCurrentZabbixServerId,null);
+		}
 
 		mPreferences.refresh(getApplicationContext());
 		mCurrentZabbixServerId = mPreferences.getServerSelection();
 		Log.d(TAG, "mCurrentZabbixServerId="+mCurrentZabbixServerId);
+	}
 
-		// clear adapters
-
-		ArrayList<BaseServiceAdapter<?>> listAdapters = new ArrayList<BaseServiceAdapter<?>>();
-		listAdapters.add(mHostGroupsSpinnerAdapter);
-		listAdapters.addAll(mEventsListAdapters.values());
-		listAdapters.addAll(mProblemsListAdapters.values());
-		listAdapters.add(mProblemsMainListAdapter);
-		listAdapters.add(mHostsListAdapter);
-		listAdapters.addAll(mChecksItemsListAdapters.values());
-		listAdapters.add(mScreensListAdapter);
-
-		for (BaseServiceAdapter<?> adapter : listAdapters) {
-			adapter.clear();
-			adapter.notifyDataSetChanged();
-		}
-
-		ArrayList<BaseServicePagerAdapter<?>> pagerAdapters = new ArrayList<BaseServicePagerAdapter<?>>();
-		pagerAdapters.addAll(mEventsDetailsPagerAdapters.values());
-		pagerAdapters.addAll(mProblemsDetailsPagerAdapters.values());
-		pagerAdapters.add(mChecksApplicationsPagerAdapter);
-
-		for (BaseServicePagerAdapter<?> adapter : pagerAdapters) {
-			adapter.clear();
-			adapter.notifyDataSetChanged();
-		}
-
-		if(logout){
-			mRemoteAPI.logout();
-			zabbixAPIs.remove(mRemoteAPI);
-			mRemoteAPI = new ZabbixRemoteAPI(this.getApplicationContext(),
-					mDatabaseHelper, mCurrentZabbixServerId, null);
-			zabbixAPIs.put(mRemoteAPI.getZabbixSeverId(),mRemoteAPI);
-		}
+	public void clearCache() {
+		mDatabaseHelper.clearAllData();
 	}
 
 	public ZabbixServer getServerById(long id){
@@ -253,8 +258,8 @@ public class ZabbixDataService extends Service {
 	 *
 	 * @return list pager adapter
 	 */
-	public BaseSeverityListPagerAdapter<Event> getEventsListPagerAdapter() {
-		return mEventsListPagerAdapter;
+	public BaseSeverityListPagerAdapter<Event> getEventsListPagerAdapter(long serverId) {
+		return mEventsListPagerAdapter.get(serverId);
 	}
 
 	/**
@@ -266,9 +271,8 @@ public class ZabbixDataService extends Service {
 	 *            severity of the adapter
 	 * @return list adapter
 	 */
-	public BaseServiceAdapter<Event> getEventsListAdapter(
-			TriggerSeverity severity) {
-		return mEventsListAdapters.get(severity);
+	public BaseServiceAdapter<Event> getEventsListAdapter(long serverId, TriggerSeverity severity) {
+		return mEventsListAdapters.get(serverId).get(severity);
 	}
 
 	/**
@@ -280,9 +284,8 @@ public class ZabbixDataService extends Service {
 	 *            severity of the adapter
 	 * @return details pager adapter
 	 */
-	public BaseSeverityPagerAdapter<Event> getEventsDetailsPagerAdapter(
-			TriggerSeverity severity) {
-		return mEventsDetailsPagerAdapters.get(severity);
+	public BaseSeverityPagerAdapter<Event> getEventsDetailsPagerAdapter(long serverId,TriggerSeverity severity) {
+		return mEventsDetailsPagerAdapters.get(serverId).get(severity);
 	}
 
 	/**
@@ -292,8 +295,8 @@ public class ZabbixDataService extends Service {
 	 *
 	 * @return spinner adapter
 	 */
-	public HostGroupsSpinnerAdapter getHostGroupSpinnerAdapter() {
-		return mHostGroupsSpinnerAdapter;
+	public HostGroupsSpinnerAdapter getHostGroupSpinnerAdapter(long serverId) {
+		return mHostGroupsSpinnerAdapter.get(serverId);
 	}
 
 	/**
@@ -301,18 +304,8 @@ public class ZabbixDataService extends Service {
 	 *
 	 * @return list pager adapter
 	 */
-	public BaseSeverityListPagerAdapter<Trigger> getProblemsListPagerAdapter() {
-		return mProblemsListPagerAdapter;
-	}
-
-	/**
-	 * Returns the problems list adapter for the main view. This adapter
-	 * contains all active problems regardless of severity and hostgroup.
-	 *
-	 * @return list adapter
-	 */
-	public BaseServiceAdapter<Trigger> getProblemsMainListAdapter() {
-		return mProblemsMainListAdapter;
+	public BaseSeverityListPagerAdapter<Trigger> getProblemsListPagerAdapter(long serverId) {
+		return mProblemsListPagerAdapter.get(serverId);
 	}
 
 	/**
@@ -324,9 +317,9 @@ public class ZabbixDataService extends Service {
 	 *            severity of the adapter
 	 * @return list adapter
 	 */
-	public BaseServiceAdapter<Trigger> getProblemsListAdapter(
+	public BaseServiceAdapter<Trigger> getProblemsListAdapter(long serverId,
 			TriggerSeverity severity) {
-		return mProblemsListAdapters.get(severity);
+		return mProblemsListAdapters.get(serverId).get(severity);
 	}
 
 	/**
@@ -338,9 +331,9 @@ public class ZabbixDataService extends Service {
 	 *            severity of the adapter
 	 * @return details pager adapter
 	 */
-	public BaseSeverityPagerAdapter<Trigger> getProblemsDetailsPagerAdapter(
+	public BaseSeverityPagerAdapter<Trigger> getProblemsDetailsPagerAdapter(long serverId,
 			TriggerSeverity severity) {
-		return mProblemsDetailsPagerAdapters.get(severity);
+		return mProblemsDetailsPagerAdapters.get(serverId).get(severity);
 	}
 
 	/**
@@ -350,8 +343,8 @@ public class ZabbixDataService extends Service {
 	 *
 	 * @return host list adapter
 	 */
-	public HostsListAdapter getHostsListAdapter() {
-		return mHostsListAdapter;
+	public HostsListAdapter getHostsListAdapter(long serverId) {
+		return mHostsListAdapter.get(serverId);
 	}
 
 	/**
@@ -361,8 +354,8 @@ public class ZabbixDataService extends Service {
 	 *
 	 * @return screens list adapter
 	 */
-	public ScreensListAdapter getScreensListAdapter() {
-		return mScreensListAdapter;
+	public ScreensListAdapter getScreensListAdapter(long serverId) {
+		return mScreensListAdapter.get(serverId);
 	}
 
 	/**
@@ -370,8 +363,8 @@ public class ZabbixDataService extends Service {
 	 *
 	 * @return
 	 */
-	public ChecksApplicationsPagerAdapter getChecksApplicationsPagerAdapter() {
-		return mChecksApplicationsPagerAdapter;
+	public ChecksApplicationsPagerAdapter getChecksApplicationsPagerAdapter(long serverId) {
+		return mChecksApplicationsPagerAdapter.get(zabbixAPIs.get(serverId).getZabbixSeverId());
 	}
 
 	/**
@@ -379,8 +372,8 @@ public class ZabbixDataService extends Service {
 	 *
 	 * @return
 	 */
-	public ChecksItemsListAdapter getChecksItemsListAdapter(long applicationID) {
-		return mChecksItemsListAdapters.get(mDatabaseHelper.getApplicationById(applicationID).toString());
+	public ChecksItemsListAdapter getChecksItemsListAdapter(long serverId, long applicationID) {
+		return mChecksItemsListAdapters.get(zabbixAPIs.get(serverId).getZabbixSeverId()).get(mDatabaseHelper.getApplicationById(applicationID).toString());
 	}
 
 	/**
@@ -439,6 +432,7 @@ public class ZabbixDataService extends Service {
 		if (!mIsTesting) {
 			onBind(null, null);
 		}
+		this.setupAdapters(mCurrentZabbixServerId);
 
 		return mBinder;
 	}
@@ -457,18 +451,19 @@ public class ZabbixDataService extends Service {
 				// mDatabaseHelper.getWritableDatabase(), 0, 1);
 			}
 
-			Log.d(TAG, "onCreate");
+			Log.d(TAG, "onBind");
 		}
-		if (mRemoteAPI == null) {
+		if (zabbixAPIs.get(mCurrentZabbixServerId) == null) {
 			if (remoteAPIMock != null) {
-				mRemoteAPI = remoteAPIMock;
+//				zabbixAPIs.get(mCurrentZabbixServerId) = remoteAPIMock;
 			} else {
 				// in case there was a preferences migration
 				mPreferences.refresh(getApplicationContext());
 				mCurrentZabbixServerId = mPreferences.getServerSelection();
-				mRemoteAPI = new ZabbixRemoteAPI(this.getApplicationContext(),
+				ZabbixRemoteAPI newAPI = new ZabbixRemoteAPI(this.getApplicationContext(),
 						mDatabaseHelper, mCurrentZabbixServerId, null);
-				zabbixAPIs.put(mRemoteAPI.getZabbixSeverId(),mRemoteAPI);
+				zabbixAPIs.put(mCurrentZabbixServerId,newAPI);
+				this.setupAdapters(mCurrentZabbixServerId);
 			}
 		}
 	}
@@ -485,28 +480,29 @@ public class ZabbixDataService extends Service {
 	 *            process
 	 *
 	 */
-	public void performZabbixLogin(final OnLoginProgressListener listener) {
-		final boolean loginNecessary = !mRemoteAPI.isLoggedIn();
+	public void performZabbixLogin(final long serverId, final OnLoginProgressListener listener) {
+		final ZabbixRemoteAPI remoteAPI = zabbixAPIs.get(serverId);
+		final boolean loginNecessary = !remoteAPI.isLoggedIn();
 		if (loginNecessary && listener != null)
 			listener.onLoginStarted();
 
 		// authenticate
-		RemoteAPITask loginTask = new RemoteAPITask(mRemoteAPI) {
+		RemoteAPITask loginTask = new RemoteAPITask(remoteAPI) {
 
 			private boolean success = false;
 			private List<HostGroup> hostGroups;
-			private final BaseServiceAdapter<HostGroup> groupsAdapter = mHostGroupsSpinnerAdapter;
+			private final BaseServiceAdapter<HostGroup> groupsAdapter = mHostGroupsSpinnerAdapter.get(mCurrentZabbixServerId);
 
 			@Override
 			protected void executeTask() throws ZabbixLoginRequiredException,
 					FatalException {
 				if (loginNecessary)
-					mRemoteAPI.authenticate();
+					remoteAPI.authenticate();
 				success = true;
 
 				hostGroups = new ArrayList<HostGroup>();
 				try {
-					mRemoteAPI.importHostsAndGroups();
+					remoteAPI.importHostsAndGroups();
 					// even if the api call is not successful, we can still use
 					// the cached events
 				} finally {
@@ -538,46 +534,49 @@ public class ZabbixDataService extends Service {
 		mPreferences = ZaxPreferences.getInstance(getApplicationContext());
 		mCurrentZabbixServerId = mPreferences.getServerSelection();
 
-		// set up adapters
-		mServersListSelectionAdapter = new ServersListSelectionAdapter(this);
-		mServersListManagementAdapter = new ServersListManagementAdapter(this);
-
-		mEventsListPagerAdapter = new EventsListPagerAdapter(this);
-		mEventsListAdapters = new HashMap<TriggerSeverity, EventsListAdapter>(
-				TriggerSeverity.values().length);
-		mEventsDetailsPagerAdapters = new HashMap<TriggerSeverity, EventsDetailsPagerAdapter>(
-				TriggerSeverity.values().length);
-
-		for (TriggerSeverity s : TriggerSeverity.values()) {
-			mEventsListAdapters.put(s, new EventsListAdapter(this));
-			mEventsDetailsPagerAdapters
-					.put(s, new EventsDetailsPagerAdapter(s));
-		}
-
-		mProblemsListPagerAdapter = new ProblemsListPagerAdapter(this);
-		mProblemsListAdapters = new HashMap<TriggerSeverity, ProblemsListAdapter>(
-				TriggerSeverity.values().length);
-		mProblemsMainListAdapter = new ProblemsListAdapter(this);
-		mProblemsDetailsPagerAdapters = new HashMap<TriggerSeverity, ProblemsDetailsPagerAdapter>(
-				TriggerSeverity.values().length);
-
-		for (TriggerSeverity s : TriggerSeverity.values()) {
-			mProblemsListAdapters.put(s, new ProblemsListAdapter(this));
-			mProblemsDetailsPagerAdapters.put(s,
-					new ProblemsDetailsPagerAdapter(s));
-		}
-
-		mHostGroupsSpinnerAdapter = new HostGroupsSpinnerAdapter(this);
-
-		mHostsListAdapter = new HostsListAdapter(this);
-		mChecksApplicationsPagerAdapter = new ChecksApplicationsPagerAdapter();
-		mChecksItemsListAdapters = new HashMap<String,ChecksItemsListAdapter>();
-
-		mScreensListAdapter = new ScreensListAdapter(this);
+		setupAdapters(mCurrentZabbixServerId);
 
 		mCurrentLoadHistoryDetailsTasks = new HashSet<RemoteAPITask>();
 
 
+	}
+
+	private void setupAdapters(Long id) {
+		mServersListSelectionAdapter = new ServersListSelectionAdapter(this);
+		mServersListManagementAdapter = new ServersListManagementAdapter(this);
+
+		mEventsListPagerAdapter.put(id,new EventsListPagerAdapter(this));
+		mEventsListAdapters.put(id,new HashMap<TriggerSeverity, EventsListAdapter>(
+				TriggerSeverity.values().length));
+		mEventsDetailsPagerAdapters.put(id, new HashMap<TriggerSeverity, EventsDetailsPagerAdapter>(
+				TriggerSeverity.values().length));
+
+		for (TriggerSeverity s : TriggerSeverity.values()) {
+			mEventsListAdapters.get(id).put(s, new EventsListAdapter(this));
+			mEventsDetailsPagerAdapters.get(id)
+					.put(s, new EventsDetailsPagerAdapter(s));
+		}
+
+		mProblemsListPagerAdapter.put(id,new ProblemsListPagerAdapter(this));
+		mProblemsListAdapters.put(id,new HashMap<TriggerSeverity, ProblemsListAdapter>(
+				TriggerSeverity.values().length));
+		mProblemsMainListAdapter.put(id, new ProblemsListAdapter(this));
+		mProblemsDetailsPagerAdapters.put(id, new HashMap<TriggerSeverity, ProblemsDetailsPagerAdapter>(
+				TriggerSeverity.values().length));
+
+		for (TriggerSeverity s : TriggerSeverity.values()) {
+			mProblemsListAdapters.get(id).put(s, new ProblemsListAdapter(this));
+			mProblemsDetailsPagerAdapters.get(id).put(s,
+					new ProblemsDetailsPagerAdapter(s));
+		}
+
+		mHostGroupsSpinnerAdapter.put(id, new HostGroupsSpinnerAdapter(this));
+
+		mHostsListAdapter.put(id,new HostsListAdapter(this));
+		mChecksApplicationsPagerAdapter.put(id,new ChecksApplicationsPagerAdapter());
+		mChecksItemsListAdapters.put(id, new HashMap<String, ChecksItemsListAdapter>());
+
+		mScreensListAdapter.put(id,new ScreensListAdapter(this));
 	}
 
 	/**
@@ -600,7 +599,7 @@ public class ZabbixDataService extends Service {
 
 		cancelTask(mCurrentLoadEventsTask);
 
-		mCurrentLoadEventsTask = new RemoteAPITask(mRemoteAPI) {
+		mCurrentLoadEventsTask = new RemoteAPITask(zabbixAPIs.get(mCurrentZabbixServerId)) {
 
 			private Map<TriggerSeverity, List<Event>> events;
 
@@ -609,7 +608,7 @@ public class ZabbixDataService extends Service {
 					FatalException {
 				events = new HashMap<TriggerSeverity, List<Event>>();
 				try {
-					mRemoteAPI.importEvents(this);
+					zabbixAPIs.get(mCurrentZabbixServerId).importEvents(this);
 				} finally {
 					// even if the api call is not successful, we can still use
 					// the cached events
@@ -625,10 +624,14 @@ public class ZabbixDataService extends Service {
 			protected void onPostExecute(Void result) {
 				super.onPostExecute(result);
 				for (TriggerSeverity severity : TriggerSeverity.values()) {
-					BaseServiceAdapter<Event> listAdapter = mEventsListAdapters
-							.get(severity);
-					BaseSeverityPagerAdapter<Event> detailsAdapter = mEventsDetailsPagerAdapters
-							.get(severity);
+					BaseServiceAdapter<Event> listAdapter =
+							mEventsListAdapters
+								.get(mCurrentZabbixServerId)
+								.get(severity);
+					BaseSeverityPagerAdapter<Event> detailsAdapter =
+							mEventsDetailsPagerAdapters
+								.get(mCurrentZabbixServerId)
+								.get(severity);
 					if (listAdapter != null) {
 						if (hostGroupChanged)
 							listAdapter.clear();
@@ -681,7 +684,7 @@ public class ZabbixDataService extends Service {
 			final OnSeverityListAdapterLoadedListener callback) {
 
 		cancelTask(mCurrentLoadProblemsTask);
-		mCurrentLoadProblemsTask = new RemoteAPITask(mRemoteAPI) {
+		mCurrentLoadProblemsTask = new RemoteAPITask(zabbixAPIs.get(mCurrentZabbixServerId)) {
 
 			private Map<TriggerSeverity, List<Trigger>> triggers;
 
@@ -690,7 +693,7 @@ public class ZabbixDataService extends Service {
 					FatalException {
 				triggers = new HashMap<TriggerSeverity, List<Trigger>>();
 				try {
-					mRemoteAPI.importActiveTriggers(this);
+					zabbixAPIs.get(mCurrentZabbixServerId).importActiveTriggers(this);
 					// even if the api call is not successful, we can still use
 					// the cached events
 				} finally {
@@ -706,11 +709,14 @@ public class ZabbixDataService extends Service {
 			protected void onPostExecute(Void result) {
 				super.onPostExecute(result);
 				for (TriggerSeverity severity : TriggerSeverity.values()) {
-					BaseServiceAdapter<Trigger> adapter = mProblemsListAdapters
-							.get(severity);
-					BaseServiceAdapter<Trigger> mainAdapter = mProblemsMainListAdapter;
-					BaseSeverityPagerAdapter<Trigger> detailsAdapter = mProblemsDetailsPagerAdapters
-							.get(severity);
+					BaseServiceAdapter<Trigger> adapter =
+							mProblemsListAdapters
+								.get(mCurrentZabbixServerId)
+								.get(severity);
+					BaseServiceAdapter<Trigger> mainAdapter =
+							mProblemsMainListAdapter.get(mCurrentZabbixServerId);
+					BaseSeverityPagerAdapter<Trigger> detailsAdapter =
+							mProblemsDetailsPagerAdapters.get(mCurrentZabbixServerId).get(severity);
 					if (mainAdapter != null && severity == TriggerSeverity.ALL
 							&& hostGroupId == HostGroup.GROUP_ID_ALL) {
 						mainAdapter.addAll(triggers.get(severity));
@@ -769,17 +775,17 @@ public class ZabbixDataService extends Service {
 	 */
 	public void loadHostsByHostGroup(final long hostGroupId,
 			final boolean hostGroupChanged, final OnHostsLoadedListener callback) {
-		new RemoteAPITask(mRemoteAPI) {
+		new RemoteAPITask(zabbixAPIs.get(mCurrentZabbixServerId)) {
 
 			private List<Host> hosts;
-			private final BaseServiceAdapter<Host> hostsAdapter = mHostsListAdapter;
+			private final BaseServiceAdapter<Host> hostsAdapter = mHostsListAdapter.get(mCurrentZabbixServerId);
 
 			@Override
 			protected void executeTask() throws ZabbixLoginRequiredException,
 					FatalException {
 				hosts = new ArrayList<Host>();
 				try {
-					mRemoteAPI.importHostsAndGroups();
+					zabbixAPIs.get(mCurrentZabbixServerId).importHostsAndGroups();
 					// even if the api call is not successful, we can still use
 					// the cached events
 				} finally {
@@ -812,17 +818,17 @@ public class ZabbixDataService extends Service {
 	 *
 	 */
 	public void loadHostsAndHostGroups() {
-		new RemoteAPITask(mRemoteAPI) {
+		new RemoteAPITask(zabbixAPIs.get(mCurrentZabbixServerId)) {
 
 			private List<HostGroup> hostGroups;
-			private final BaseServiceAdapter<HostGroup> hostGroupsAdapter = mHostGroupsSpinnerAdapter;
+			private final BaseServiceAdapter<HostGroup> hostGroupsAdapter = mHostGroupsSpinnerAdapter.get(mCurrentZabbixServerId);
 
 			@Override
 			protected void executeTask() throws ZabbixLoginRequiredException,
 					FatalException {
 				hostGroups = new ArrayList<HostGroup>();
 				try {
-					mRemoteAPI.importHostsAndGroups();
+					zabbixAPIs.get(mCurrentZabbixServerId).importHostsAndGroups();
 					// even if the api call is not successful, we can still use
 					// the cached events
 				} finally {
@@ -869,7 +875,7 @@ public class ZabbixDataService extends Service {
 			final boolean resetSelection) {
 
 		cancelTask(mCurrentLoadApplicationsTask);
-		mCurrentLoadApplicationsTask = new RemoteAPITask(mRemoteAPI) {
+		mCurrentLoadApplicationsTask = new RemoteAPITask(zabbixAPIs.get(mCurrentZabbixServerId)) {
 
 			List<Application> applications;
 
@@ -879,8 +885,8 @@ public class ZabbixDataService extends Service {
 				try {
 					// We only import applications with corresponding hosts
 					// (this way templates are ignored)
-					mRemoteAPI.importApplicationsByHostId(hostId, this);
-					mRemoteAPI.importItemsByHostId(hostId, this);
+					zabbixAPIs.get(mCurrentZabbixServerId).importApplicationsByHostId(hostId, this);
+					zabbixAPIs.get(mCurrentZabbixServerId).importItemsByHostId(hostId, this);
 				} finally {
 					applications = mDatabaseHelper
 							.getApplicationsByHostId(hostId);
@@ -894,8 +900,8 @@ public class ZabbixDataService extends Service {
 				// fill adapter
 				if (mChecksApplicationsPagerAdapter != null) {
 					mChecksApplicationsPagerAdapter.clear();
-					mChecksApplicationsPagerAdapter.addAll(applications);
-					mChecksApplicationsPagerAdapter.notifyDataSetChanged();
+					mChecksApplicationsPagerAdapter.get(mCurrentZabbixServerId).addAll(applications);
+					mChecksApplicationsPagerAdapter.get(mCurrentZabbixServerId).notifyDataSetChanged();
 
 					if (callback != null)
 						callback.onApplicationsLoaded(resetSelection);
@@ -928,7 +934,7 @@ public class ZabbixDataService extends Service {
 	public void loadItemsByApplicationId(final long applicationId,
 			final OnItemsLoadedListener callback) {
 //		cancelTask(mCurrentLoadItemsTask);
-		mCurrentLoadItemsTask = new RemoteAPITask(mRemoteAPI) {
+		mCurrentLoadItemsTask = new RemoteAPITask(zabbixAPIs.get(mCurrentZabbixServerId)) {
 
 			List<Item> items;
 			Application application;
@@ -957,7 +963,7 @@ public class ZabbixDataService extends Service {
 				if(application != null){
 
 					ChecksItemsListAdapter checksItemsListAdapter
-							= mChecksItemsListAdapters.get(application);
+							= mChecksItemsListAdapters.get(mCurrentZabbixServerId).get(application);
 
 					if (checksItemsListAdapter == null){
 						checksItemsListAdapter = new ChecksItemsListAdapter(ZabbixDataService.this);
@@ -966,7 +972,9 @@ public class ZabbixDataService extends Service {
 					checksItemsListAdapter.clear();
 					checksItemsListAdapter.addAll(items);
 					checksItemsListAdapter.notifyDataSetChanged();
-					mChecksItemsListAdapters.put(application.toString(), checksItemsListAdapter);
+					mChecksItemsListAdapters
+							.get(mCurrentZabbixServerId)
+							.put(application.toString(), checksItemsListAdapter);
 
 					if (callback != null) {
 						callback.onItemsLoaded();
@@ -1002,7 +1010,7 @@ public class ZabbixDataService extends Service {
 			cancelLoadHistoryDetailsTasks();
 		}
 
-		RemoteAPITask currentTask = new RemoteAPITask(mRemoteAPI) {
+		RemoteAPITask currentTask = new RemoteAPITask(zabbixAPIs.get(mCurrentZabbixServerId)) {
 
 			List<HistoryDetail> historyDetails;
 
@@ -1010,7 +1018,7 @@ public class ZabbixDataService extends Service {
 			protected void executeTask() throws ZabbixLoginRequiredException,
 					FatalException {
 				try {
-					mRemoteAPI.importHistoryDetails(item.getId(), this);
+					zabbixAPIs.get(mCurrentZabbixServerId).importHistoryDetails(item.getId(), this);
 				} finally {
 					historyDetails = mDatabaseHelper
 							.getHistoryDetailsByItemId(item.getId());
@@ -1048,7 +1056,7 @@ public class ZabbixDataService extends Service {
 	 *
 	 */
 	public void loadScreens(final OnScreensLoadedListener callback) {
-		new RemoteAPITask(mRemoteAPI) {
+		new RemoteAPITask(zabbixAPIs.get(mCurrentZabbixServerId)) {
 
 			List<Screen> screens;
 
@@ -1056,7 +1064,7 @@ public class ZabbixDataService extends Service {
 			protected void executeTask() throws ZabbixLoginRequiredException,
 					FatalException {
 				try {
-					mRemoteAPI.importScreens();
+					zabbixAPIs.get(mCurrentZabbixServerId).importScreens();
 				} finally {
 					screens = mDatabaseHelper.getScreens(mCurrentZabbixServerId);
 				}
@@ -1067,9 +1075,9 @@ public class ZabbixDataService extends Service {
 				super.onPostExecute(result);
 
 				if (mScreensListAdapter != null) {
-					mScreensListAdapter.clear();
-					mScreensListAdapter.addAll(screens);
-					mScreensListAdapter.notifyDataSetChanged();
+					mScreensListAdapter.get(mCurrentZabbixServerId).clear();
+					mScreensListAdapter.get(mCurrentZabbixServerId).addAll(screens);
+					mScreensListAdapter.get(mCurrentZabbixServerId).notifyDataSetChanged();
 				}
 
 				if (callback != null)
@@ -1089,12 +1097,12 @@ public class ZabbixDataService extends Service {
 	public void loadGraphsByScreen(final Screen screen,
 			final OnGraphsLoadedListener callback) {
 		cancelTask(mCurrentLoadGraphsTask);
-		mCurrentLoadGraphsTask = new RemoteAPITask(mRemoteAPI) {
+		mCurrentLoadGraphsTask = new RemoteAPITask(zabbixAPIs.get(mCurrentZabbixServerId)) {
 
 			@Override
 			protected void executeTask() throws ZabbixLoginRequiredException,
 					FatalException {
-				mRemoteAPI.importGraphsByScreen(screen);
+				zabbixAPIs.get(mCurrentZabbixServerId).importGraphsByScreen(screen);
 				screen.setGraphs(mDatabaseHelper.getGraphsByScreen(screen));
 				int numGraphs = screen.getGraphs().size();
 				int j = 0;
@@ -1103,7 +1111,7 @@ public class ZabbixDataService extends Service {
 					int k = 0;
 					for (GraphItem gi : g.getGraphItems()) {
 						Item item = gi.getItem();
-						mRemoteAPI.importHistoryDetails(item.getId(), null);
+						zabbixAPIs.get(mCurrentZabbixServerId).importHistoryDetails(item.getId(), null);
 						item.setHistoryDetails(mDatabaseHelper
 								.getHistoryDetailsByItemId(item.getId()));
 						k++;
@@ -1148,14 +1156,14 @@ public class ZabbixDataService extends Service {
 	 */
 	public void loadGraph(final Graph graph,
 			final OnGraphsLoadedListener callback) {
-		new RemoteAPITask(mRemoteAPI) {
+		new RemoteAPITask(zabbixAPIs.get(mCurrentZabbixServerId)) {
 
 			@Override
 			protected void executeTask() throws ZabbixLoginRequiredException,
 					FatalException {
 				for (GraphItem gi : graph.getGraphItems()) {
 					Item item = gi.getItem();
-					mRemoteAPI.importHistoryDetails(item.getId(), this);
+					zabbixAPIs.get(mCurrentZabbixServerId).importHistoryDetails(item.getId(), this);
 					item.setHistoryDetails(mDatabaseHelper
 							.getHistoryDetailsByItemId(item.getId()));
 				}
@@ -1225,6 +1233,14 @@ public class ZabbixDataService extends Service {
 		cancelTask(mCurrentLoadGraphsTask);
 	}
 
+	public void cancelAllTasks(){
+		this.cancelLoadApplicationsTask();
+		this.cancelLoadEventsTask();
+		this.cancelLoadGraphsTask();
+		this.cancelLoadHistoryDetailsTasks();
+		this.cancelLoadItemsTask();
+		this.cancelLoadProblemsTask();
+	}
 	/**
 	 * Acknowledges an event.
 	 *
@@ -1238,7 +1254,7 @@ public class ZabbixDataService extends Service {
 	 */
 	public void acknowledgeEvent(final Event event, final String comment,
 			final OnAcknowledgeEventListener callback) {
-		new RemoteAPITask(mRemoteAPI) {
+		new RemoteAPITask(zabbixAPIs.get(mCurrentZabbixServerId)) {
 
 			private boolean mSuccess = false;
 
@@ -1247,7 +1263,7 @@ public class ZabbixDataService extends Service {
 					FatalException {
 				if (event == null)
 					return;
-				mRemoteAPI.acknowledgeEvent(event.getId(), comment);
+				zabbixAPIs.get(mCurrentZabbixServerId).acknowledgeEvent(event.getId(), comment);
 				mSuccess = mDatabaseHelper.acknowledgeEvent(event);
 			}
 
@@ -1302,12 +1318,12 @@ public class ZabbixDataService extends Service {
 		return mDatabaseHelper.getGraphById(graphId);
 	}
 
-	public void performZabbixLogout() {
-		mRemoteAPI.logout();
+	public void performAPILogout() {
+		zabbixAPIs.get(mCurrentZabbixServerId).logout();
 	}
 
-	public void initConnection() {
-		mRemoteAPI.initConnection();
+	public void initConnection(long serverId) {
+		zabbixAPIs.get(serverId).initConnection();
 	}
 
 	public ZabbixServer createNewZabbixServer(String name) {
@@ -1330,17 +1346,18 @@ public class ZabbixDataService extends Service {
 		mServersListManagementAdapter.notifyDataSetChanged();
 	}
 
-	public void setZabbixServer(long zabbixServerID){
-		if(mRemoteAPI.getZabbixSeverId() != zabbixServerID){
-			if(zabbixAPIs.containsKey(zabbixServerID)){
-				mRemoteAPI = zabbixAPIs.get(zabbixServerID);
-				Log.d(TAG,"switching to existing API-instance");
-			} else {
+	public synchronized void selectAPIServer(long zabbixServerID){
+		if(mCurrentZabbixServerId != zabbixServerID){
+//			this.cancelAllTasks();
+			this.mCurrentZabbixServerId = zabbixServerID;
+			if(!zabbixAPIs.containsKey(zabbixServerID)){
 				ZabbixRemoteAPI newZabbixServer = new ZabbixRemoteAPI(this.getApplicationContext(),
 						mDatabaseHelper, mCurrentZabbixServerId, null);
 				zabbixAPIs.put(zabbixServerID,newZabbixServer);
-				mRemoteAPI = newZabbixServer;
-				this.clearAllData(false);
+				this.setupAdapters(newZabbixServer.getZabbixSeverId());
+				this.clearCache();
+				this.performZabbixLogin(zabbixServerID,null);
+//				this.clearAllData(false);
 				Log.d(TAG,"creating new API-instance and switching to it");
 			}
 		}

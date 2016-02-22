@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.inovex.zabbixmobile.R;
+import com.inovex.zabbixmobile.activities.BaseActivity;
 import com.inovex.zabbixmobile.model.Trigger;
 
 /**
@@ -38,7 +39,7 @@ public class ProblemsListPage extends BaseSeverityFilterListPage<Trigger> {
 
 	@Override
 	protected void setupListAdapter() {
-		mListAdapter = mZabbixDataService.getProblemsListAdapter(mSeverity);
+		mListAdapter = mZabbixDataService.getProblemsListAdapter(((BaseActivity)this.getActivity()).getPersistedServerSelection(),mSeverity);
 		setListAdapter(mListAdapter);
 	}
 

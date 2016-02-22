@@ -124,7 +124,7 @@ public class ProblemsActivity extends BaseSeverityFilterActivity<Trigger> {
 		BaseSeverityListPagerAdapter<Trigger> pagerAdapter = mZabbixDataService
 				.getProblemsListPagerAdapter();
 		pagerAdapter.updateTitle(severity.getPosition(), mZabbixDataService
-				.getProblemsListAdapter(severity).getCount());
+				.getProblemsListAdapter(this.getPersistedServerSelection(),severity).getCount());
 
 		if (severity == TriggerSeverity.ALL && mTriggerPosition != -1) {
 			selectItem(mTriggerPosition);

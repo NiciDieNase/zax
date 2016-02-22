@@ -27,6 +27,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.inovex.zabbixmobile.R;
+import com.inovex.zabbixmobile.activities.BaseActivity;
 import com.inovex.zabbixmobile.adapters.ScreensListAdapter;
 import com.inovex.zabbixmobile.listeners.OnScreensItemSelectedListener;
 
@@ -81,7 +82,7 @@ public class ScreensListFragment extends BaseServiceConnectedListFragment {
 
 	@Override
 	protected void setupListAdapter() {
-		this.mListAdapter = mZabbixDataService.getScreensListAdapter();
+		this.mListAdapter = mZabbixDataService.getScreensListAdapter(((BaseActivity)this.getActivity()).getPersistedServerSelection());
 		setListAdapter(mListAdapter);
 	}
 

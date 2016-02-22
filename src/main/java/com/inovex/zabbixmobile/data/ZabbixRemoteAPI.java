@@ -245,13 +245,13 @@ public class ZabbixRemoteAPI {
 		connection.setDoOutput(true);
 		connection.setDoInput(true);
 
-		JSONObject json = new JSONObject()
-				.put("jsonrpc", "2.0")
-				.put("method", method)
-				.put("params", params)
-				.put("id", 0);
-		if(!method.equals("apiinfo.version")){
-			json.put("auth", mZabbixAuthToken);
+		JSONObject json = new JSONObject();
+		json.put("jsonrpc", "2.0")
+			.put("method", method)
+			.put("params", params)
+			.put("id", 0);
+		if( !"apiinfo.version".equals(method) && !getAuthenticationMethod().equals(method) ){
+			json.put("auth", this.mZabbixAuthToken);
 		}
 
 		OutputStreamWriter outputStreamWriter

@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.inovex.zabbixmobile.R;
+import com.inovex.zabbixmobile.activities.BaseActivity;
 import com.inovex.zabbixmobile.model.Event;
 
 /**
@@ -37,7 +38,7 @@ public class EventsListPage extends BaseSeverityFilterListPage<Event> {
 
 	@Override
 	protected void setupListAdapter() {
-		mListAdapter = mZabbixDataService.getEventsListAdapter(mSeverity);
+		mListAdapter = mZabbixDataService.getEventsListAdapter(((BaseActivity)this.getActivity()).getPersistedServerSelection(),mSeverity);
 		setListAdapter(mListAdapter);
 	}
 

@@ -29,6 +29,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.inovex.zabbixmobile.R;
+import com.inovex.zabbixmobile.activities.BaseActivity;
 import com.inovex.zabbixmobile.adapters.ChecksItemsListAdapter;
 import com.inovex.zabbixmobile.listeners.OnChecksItemSelectedListener;
 import com.inovex.zabbixmobile.listeners.OnItemsLoadedListener;
@@ -149,7 +150,7 @@ public class ChecksApplicationsPage extends BaseServiceConnectedListFragment imp
 
 	@Override
 	public void onItemsLoaded() {
-		this.mListAdapter = mZabbixDataService.getChecksItemsListAdapter(mApplicationID);
+		this.mListAdapter = mZabbixDataService.getChecksItemsListAdapter(((BaseActivity)this.getActivity()).getPersistedServerSelection(),mApplicationID);
 		setListAdapter(mListAdapter);
 		((ChecksApplicationsFragment)getParentFragment()).dismissItemsLoadingSpinner();
 		mListAdapter.notifyDataSetChanged();

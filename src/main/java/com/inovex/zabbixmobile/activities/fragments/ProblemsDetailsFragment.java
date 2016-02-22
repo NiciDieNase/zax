@@ -17,6 +17,7 @@ This file is part of ZAX.
 
 package com.inovex.zabbixmobile.activities.fragments;
 
+import com.inovex.zabbixmobile.activities.BaseActivity;
 import com.inovex.zabbixmobile.adapters.ProblemsDetailsPagerAdapter;
 import com.inovex.zabbixmobile.model.Trigger;
 
@@ -34,7 +35,7 @@ public class ProblemsDetailsFragment extends
 	@Override
 	protected void retrievePagerAdapter() {
 		mDetailsPagerAdapter = mZabbixDataService
-				.getProblemsDetailsPagerAdapter(mSeverity);
+				.getProblemsDetailsPagerAdapter(((BaseActivity)this.getActivity()).getPersistedServerSelection(),mSeverity);
 	}
 
 	@Override
