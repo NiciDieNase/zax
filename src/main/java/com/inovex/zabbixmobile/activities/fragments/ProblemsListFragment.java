@@ -17,6 +17,7 @@ This file is part of ZAX.
 
 package com.inovex.zabbixmobile.activities.fragments;
 
+import com.inovex.zabbixmobile.activities.BaseActivity;
 import com.inovex.zabbixmobile.adapters.BaseSeverityListPagerAdapter;
 import com.inovex.zabbixmobile.model.Trigger;
 
@@ -32,7 +33,7 @@ public class ProblemsListFragment extends
 
 	@Override
 	protected BaseSeverityListPagerAdapter<Trigger> retrievePagerAdapter() {
-		return mZabbixDataService.getProblemsListPagerAdapter();
+		return mZabbixDataService.getProblemsListPagerAdapter(((BaseActivity)getActivity()).getPersistedServerSelection());
 	}
 
 }

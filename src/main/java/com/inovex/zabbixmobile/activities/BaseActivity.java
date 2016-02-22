@@ -123,7 +123,12 @@ public abstract class BaseActivity extends AppCompatActivity implements
 	private TextView mServerNameView;
 	private ImageButton mServerSelectButton;
 	private View mServerNameLayout;
-	private long persistedServerSelection;
+
+	public long getPersistedServerSelection() {
+		return persistedServerSelection;
+	}
+
+	protected long persistedServerSelection;
 
 
 	@Override
@@ -303,7 +308,7 @@ public abstract class BaseActivity extends AppCompatActivity implements
 			// return to avoid a login with incorrect credentials
 			return;
 		}
-		mZabbixDataService.performZabbixLogin(this);
+		mZabbixDataService.performZabbixLogin(this.getPersistedServerSelection(),this);
 		mServersListAdapter = mZabbixDataService.getServersSelectionAdapter();
 		ZabbixServer server = mServersListAdapter.getItem(mServersListAdapter.getCurrentPosition());
 		setServerViews(server.getName());
@@ -342,15 +347,15 @@ public abstract class BaseActivity extends AppCompatActivity implements
 		// preferences have been changed and perform necessary actions
 		if (mPreferencesClosed) {
 			if (mPreferencesChangedServer && mZabbixDataService != null) {
-				mZabbixDataService.performZabbixLogout();
+				mZabbixDataService.performAPILogout();
 				mZabbixDataService.clearAllData();
-				mZabbixDataService.initConnection();
+				mZabbixDataService.initConnection(persistedServerSelection);
 				// update widget because server data has changed
 				mServersListAdapter = mZabbixDataService.getServersSelectionAdapter();
 				Intent intent = new Intent(getApplicationContext(),
 						WidgetUpdateBroadcastReceiver.class);
 				this.sendBroadcast(intent);
-				mZabbixDataService.performZabbixLogin(this);
+				mZabbixDataService.performZabbixLogin(persistedServerSelection,this);
 				mPreferencesChangedServer = false;
 				restoreServerSelection();
 			}
@@ -576,9 +581,9 @@ public abstract class BaseActivity extends AppCompatActivity implements
 	public void refreshData(boolean logout) {
 		mZabbixDataService.clearAllData(logout);
 		if(logout){
-			mZabbixDataService.performZabbixLogout();
+			mZabbixDataService.performAPILogout();
 			// re-login and load host groups
-			mZabbixDataService.performZabbixLogin(this);
+			mZabbixDataService.performZabbixLogin(this.getPersistedServerSelection(),this);
 		}
 	}
 
@@ -701,15 +706,15 @@ public abstract class BaseActivity extends AppCompatActivity implements
 
 	protected void selectServerItem(long zabbixServerId) {
 		for (int i = 0; i < mServersListAdapter.getCount(); i++) {
-			if (mServersListAdapter.getItemId(i) == zabbixServerId
-					&& mServersListAdapter.getItemId(i) != persistedServerSelection) {
+			if (mServersListAdapter.getItemId(i) == zabbixServerId) {
 				mServersListAdapter.setCurrentPosition(i);
 				setServerViews(mServersListAdapter.getItem(i).getName());
 				this.persistedServerSelection = mServersListAdapter.getItem(i).getId();
 				ZaxPreferences.getInstance(this).setServerSelection(persistedServerSelection);
-				mZabbixDataService.setZabbixServer(persistedServerSelection);
+				mZabbixDataService.selectAPIServer(persistedServerSelection);
+				mZabbixDataService.clearAllAdapters();
 //				this.mZabbixDataService.clearAllData(false);
-				this.refreshData();
+//				this.refreshData();
 				break;
 			}
 		}
@@ -720,3 +725,4 @@ public abstract class BaseActivity extends AppCompatActivity implements
 	}
 
 }
+

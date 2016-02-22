@@ -47,12 +47,20 @@ public abstract class RemoteAPITask extends AsyncTask<Void, Integer, Void> {
 		} catch (ZabbixLoginRequiredException e) {
 			Log.w(TAG, "Login failed. Retrying...");
 			try {
-				retry();
+			retry();
 			} catch (FatalException e1) {
-				e.getCause().printStackTrace();
+				if(e1.getCause() != null){
+					e1.getCause().printStackTrace();
+				} else {
+					e1.printStackTrace();
+				}
 			}
 		} catch (FatalException e) {
-			e.getCause().printStackTrace();
+			if(e.getCause() != null){
+				e.getCause().printStackTrace();
+			} else {
+				e.printStackTrace();
+			}
 		}
 		return null;
 	}

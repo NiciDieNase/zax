@@ -113,11 +113,11 @@ public class EventsActivity extends BaseSeverityFilterActivity<Event> implements
 		super.onSeverityListAdapterLoaded(severity, hostGroupChanged);
 
 		BaseSeverityListPagerAdapter<Event> pagerAdapter = mZabbixDataService
-				.getEventsListPagerAdapter();
+				.getEventsListPagerAdapter(this.getPersistedServerSelection());
 		pagerAdapter.updateTitle(severity.getPosition(), mZabbixDataService
-				.getEventsListAdapter(severity).getCount());
+				.getEventsListAdapter(this.getPersistedServerSelection(),severity).getCount());
 
-		if (severity == mZabbixDataService.getEventsListPagerAdapter()
+		if (severity == mZabbixDataService.getEventsListPagerAdapter(this.getPersistedServerSelection())
 				.getCurrentObject()) {
 			selectInitialItem(hostGroupChanged);
 		}

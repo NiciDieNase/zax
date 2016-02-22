@@ -77,7 +77,7 @@ public class ProblemsActivity extends BaseSeverityFilterActivity<Trigger> {
 			if(mDetailsFragment != null)
 				mDetailsFragment.setSeverity(TriggerSeverity.ALL);
 			BaseSeverityListPagerAdapter<Trigger> severityAdapter
-					= mZabbixDataService.getProblemsListPagerAdapter();
+					= mZabbixDataService.getProblemsListPagerAdapter(persistedServerSelection);
 			severityAdapter.setCurrentPosition(0);
 			selectHostGroupInSpinner(0, HostGroup.GROUP_ID_ALL);
 			mStartFromNotification = false;
@@ -122,9 +122,9 @@ public class ProblemsActivity extends BaseSeverityFilterActivity<Trigger> {
 		super.onSeverityListAdapterLoaded(severity, hostGroupChanged);
 
 		BaseSeverityListPagerAdapter<Trigger> pagerAdapter = mZabbixDataService
-				.getProblemsListPagerAdapter();
+				.getProblemsListPagerAdapter(persistedServerSelection);
 		pagerAdapter.updateTitle(severity.getPosition(), mZabbixDataService
-				.getProblemsListAdapter(severity).getCount());
+				.getProblemsListAdapter(this.getPersistedServerSelection(),severity).getCount());
 
 		if (severity == TriggerSeverity.ALL && mTriggerPosition != -1) {
 			selectItem(mTriggerPosition);
@@ -132,7 +132,7 @@ public class ProblemsActivity extends BaseSeverityFilterActivity<Trigger> {
 			mTriggerPosition = -1;
 			return;
 		}
-		if (severity == mZabbixDataService.getProblemsListPagerAdapter()
+		if (severity == mZabbixDataService.getProblemsListPagerAdapter(persistedServerSelection)
 				.getCurrentObject()) {
 			selectInitialItem(hostGroupChanged);
 		}

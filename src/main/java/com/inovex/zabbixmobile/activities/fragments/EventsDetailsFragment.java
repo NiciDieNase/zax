@@ -34,6 +34,7 @@ import android.view.View;
 import android.widget.EditText;
 
 import com.inovex.zabbixmobile.R;
+import com.inovex.zabbixmobile.activities.BaseActivity;
 import com.inovex.zabbixmobile.adapters.EventsDetailsPagerAdapter;
 import com.inovex.zabbixmobile.listeners.OnAcknowledgeEventListener;
 import com.inovex.zabbixmobile.model.Event;
@@ -54,7 +55,7 @@ public class EventsDetailsFragment extends
 	@Override
 	protected void retrievePagerAdapter() {
 		mDetailsPagerAdapter = mZabbixDataService
-				.getEventsDetailsPagerAdapter(mSeverity);
+				.getEventsDetailsPagerAdapter(((BaseActivity)this.getActivity()).getPersistedServerSelection(),mSeverity);
 	}
 
 	@Override

@@ -82,7 +82,7 @@ public class ScreensActivity extends BaseActivity implements
 	@Override
 	public void onServiceConnected(ComponentName className, IBinder binder) {
 		super.onServiceConnected(className, binder);
-		if (mZabbixDataService.isLoggedIn())
+		if (mZabbixDataService.isLoggedIn(this.getPersistedServerSelection()))
 			loadData();
 	}
 

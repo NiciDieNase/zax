@@ -17,6 +17,7 @@ This file is part of ZAX.
 
 package com.inovex.zabbixmobile.activities.fragments;
 
+import com.inovex.zabbixmobile.activities.BaseActivity;
 import com.inovex.zabbixmobile.adapters.BaseSeverityListPagerAdapter;
 import com.inovex.zabbixmobile.model.Event;
 
@@ -31,7 +32,7 @@ public class EventsListFragment extends BaseSeverityFilterListFragment<Event> {
 
 	@Override
 	protected BaseSeverityListPagerAdapter<Event> retrievePagerAdapter() {
-		return mZabbixDataService.getEventsListPagerAdapter();
+		return mZabbixDataService.getEventsListPagerAdapter(((BaseActivity)this.getActivity()).getPersistedServerSelection());
 	}
 
 }

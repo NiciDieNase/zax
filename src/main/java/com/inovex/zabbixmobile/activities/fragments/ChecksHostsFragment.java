@@ -26,6 +26,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.inovex.zabbixmobile.R;
+import com.inovex.zabbixmobile.activities.BaseActivity;
 import com.inovex.zabbixmobile.adapters.HostsListAdapter;
 import com.inovex.zabbixmobile.listeners.OnChecksItemSelectedListener;
 import com.inovex.zabbixmobile.model.Host;
@@ -105,7 +106,8 @@ public class ChecksHostsFragment extends BaseServiceConnectedListFragment {
 
 	@Override
 	protected void setupListAdapter() {
-		this.mListAdapter = mZabbixDataService.getHostsListAdapter();
+		this.mListAdapter = mZabbixDataService
+				.getHostsListAdapter(((BaseActivity)this.getActivity()).getPersistedServerSelection());
 		setListAdapter(mListAdapter);
 	}
 

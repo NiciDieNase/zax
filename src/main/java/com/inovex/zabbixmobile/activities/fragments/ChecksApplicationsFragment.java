@@ -31,6 +31,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.inovex.zabbixmobile.R;
+import com.inovex.zabbixmobile.activities.BaseActivity;
 import com.inovex.zabbixmobile.adapters.ChecksApplicationsPagerAdapter;
 import com.inovex.zabbixmobile.listeners.OnChecksItemSelectedListener;
 import com.inovex.zabbixmobile.listeners.OnItemsLoadedListener;
@@ -183,7 +184,9 @@ public class ChecksApplicationsFragment extends BaseServiceConnectedFragment
 
 	protected void retrievePagerAdapter() {
 		mApplicationsPagerAdapter = mZabbixDataService
-				.getChecksApplicationsPagerAdapter();
+				.getChecksApplicationsPagerAdapter(
+						((BaseActivity)this.getActivity()).getPersistedServerSelection()
+				);
 	}
 
 	/**
