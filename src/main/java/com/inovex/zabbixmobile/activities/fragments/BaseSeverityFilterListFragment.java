@@ -110,13 +110,10 @@ public abstract class BaseSeverityFilterListFragment<T> extends
 		mSeverityListPager = (ViewPager) getView().findViewById(R.id.severity_list_viewpager);
 		// Bind the tab indicator to the adapter
 		mSeverityListPagerAdapter = retrievePagerAdapter();
-		if(mSeverityListPagerAdapter == null){
-			return;
-		}
-		Log.d(TAG, "current severity: " + mSeverityListPagerAdapter.getCurrentObject());
 		mSeverityListPagerAdapter.setFragmentManager(getChildFragmentManager());
 		mSeverityListPager.setAdapter(mSeverityListPagerAdapter);
 		mSeverityListPager.setOffscreenPageLimit(1);
+		Log.d(TAG, "current severity: " + mSeverityListPagerAdapter.getCurrentObject());
 
 		mSeverityListPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 			@Override

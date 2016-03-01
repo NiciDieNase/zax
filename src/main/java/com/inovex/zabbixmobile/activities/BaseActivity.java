@@ -341,7 +341,9 @@ public abstract class BaseActivity extends AppCompatActivity implements
 		if(mZabbixDataService != null){
 			this.persistedServerSelection = ZaxPreferences.getInstance(this).getServerSelection();
 			ZabbixServer server = mZabbixDataService.getServerById(this.persistedServerSelection);
-			this.setServerViews(server.getName());
+			if(server != null){
+				this.setServerViews(server.getName());
+			}
 		}
 		// if the preferences activity has been closed, we check which
 		// preferences have been changed and perform necessary actions
@@ -575,15 +577,18 @@ public abstract class BaseActivity extends AppCompatActivity implements
 	 * Clears all cached data and performs a fresh login.
 	 */
 	public void refreshData(){
-		refreshData(true);
+		refreshData(false);
 	}
 
 	public void refreshData(boolean logout) {
-		mZabbixDataService.clearAllData(logout);
-		if(logout){
-			mZabbixDataService.performAPILogout();
-			// re-login and load host groups
-			mZabbixDataService.performZabbixLogin(this.getPersistedServerSelection(),this);
+		if(mZabbixDataService != null){
+
+			mZabbixDataService.clearAllData(logout);
+//			if(logout){
+//				mZabbixDataService.performAPILogout();
+//				// re-login and load host groups
+//				mZabbixDataService.performZabbixLogin(this.getPersistedServerSelection(),this);
+//			}
 		}
 	}
 
@@ -701,7 +706,13 @@ public abstract class BaseActivity extends AppCompatActivity implements
 
 	public void restoreServerSelection() {
 		persistedServerSelection = ZaxPreferences.getInstance(getApplicationContext()).getServerSelection();
-		selectServerItem(persistedServerSelection);
+		for (int i = 0; i < mServersListAdapter.getCount(); i++) {
+			if (mServersListAdapter.getItemId(i) == persistedServerSelection) {
+				mServersListAdapter.setCurrentPosition(i);
+				setServerViews(mServersListAdapter.getItem(i).getName());
+				ZaxPreferences.getInstance(this).setServerSelection(persistedServerSelection);
+			}
+		}
 	}
 
 	protected void selectServerItem(long zabbixServerId) {
@@ -711,14 +722,14 @@ public abstract class BaseActivity extends AppCompatActivity implements
 				setServerViews(mServersListAdapter.getItem(i).getName());
 				this.persistedServerSelection = mServersListAdapter.getItem(i).getId();
 				ZaxPreferences.getInstance(this).setServerSelection(persistedServerSelection);
-				mZabbixDataService.selectAPIServer(persistedServerSelection);
-				mZabbixDataService.clearAllAdapters();
-//				this.mZabbixDataService.clearAllData(false);
 				this.refreshData();
-				break;
+//				this.mZabbixDataService.selectAPIServer(persistedServerSelection);
+//				this.mZabbixDataService.refreshAdapters(false);
+//				this.mZabbixDataService.clearAllData(false);
 			}
 		}
 	}
+
 
 	protected void setServerViews(String name){
 		this.mServerNameView.setText(name);

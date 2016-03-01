@@ -235,7 +235,12 @@ public class ZabbixDataService extends Service {
 		mDatabaseHelper.clearAllData();
 	}
 	public ZabbixServer getServerById(long id){
-		return mDatabaseHelper.getZabbixServerById(id);
+		ZabbixServer server = mDatabaseHelper.getZabbixServerById(id);
+		if(server != null){
+			return server;
+		} else {
+			return mDatabaseHelper.getZabbixServerById(mCurrentZabbixServerId);
+		}
 	}
 
 	/**
@@ -263,7 +268,11 @@ public class ZabbixDataService extends Service {
 	 * @return list pager adapter
 	 */
 	public BaseSeverityListPagerAdapter<Event> getEventsListPagerAdapter(long serverId) {
-		return mEventsListPagerAdapter.get(serverId);
+		if(mEventsListPagerAdapter.keySet().contains(serverId)){
+			return mEventsListPagerAdapter.get(serverId);
+		} else {
+			return mEventsListPagerAdapter.get(mCurrentZabbixServerId);
+		}
 	}
 
 	/**
@@ -309,7 +318,11 @@ public class ZabbixDataService extends Service {
 	 * @return list pager adapter
 	 */
 	public BaseSeverityListPagerAdapter<Trigger> getProblemsListPagerAdapter(long serverId) {
-		return mProblemsListPagerAdapter.get(serverId);
+		if(mProblemsListPagerAdapter.keySet().contains(serverId)){
+			return mProblemsListPagerAdapter.get(serverId);
+		} else {
+			return mProblemsListPagerAdapter.get(mCurrentZabbixServerId);
+		}
 	}
 
 	/**
@@ -1355,7 +1368,7 @@ public class ZabbixDataService extends Service {
 				zabbixAPIs.put(zabbixServerID,newZabbixServer);
 				this.setupAdapters(newZabbixServer.getZabbixSeverId());
 				this.clearCache();
-				this.performZabbixLogin(zabbixServerID,null);
+				this.performZabbixLogin(zabbixServerID, null);
 //				this.clearAllData(false);
 				Log.d(TAG,"creating new API-instance and switching to it");
 			}

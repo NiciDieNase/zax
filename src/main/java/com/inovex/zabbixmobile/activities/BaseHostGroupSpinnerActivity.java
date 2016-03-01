@@ -101,11 +101,10 @@ public abstract class BaseHostGroupSpinnerActivity extends BaseActivity
 			mSpinnerAdapter.setCallback(this);
 			mSpinnerAdapter.refreshSelection();
 		}
-		if(mHostgroupToolbar != null){
+		if (mHostgroupToolbar != null) {
 			mHostgroupSpinner = (Spinner) mHostgroupToolbar.findViewById(R.id.hostgroup_select_spinner);
 			mHostgroupSpinner.setAdapter(mSpinnerAdapter);
 		}
-
 		// reload adapter
 		if (mZabbixDataService != null && mZabbixDataService.isLoggedIn(this.getPersistedServerSelection()))
 			loadAdapterContent(false);
@@ -183,7 +182,7 @@ public abstract class BaseHostGroupSpinnerActivity extends BaseActivity
 		// altered.
 		// This would happen because the host group adapter is emptied and
 		// refilled.
-		if (mSpinnerAdapter.getCurrentPosition() != 0)
+		if (mSpinnerAdapter != null && mSpinnerAdapter.getCurrentPosition() != 0)
 			mFirstCall = true;
 	}
 }

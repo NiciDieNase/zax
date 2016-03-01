@@ -31,7 +31,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.inovex.zabbixmobile.R;
-import com.inovex.zabbixmobile.activities.BaseActivity;
 import com.inovex.zabbixmobile.adapters.BaseServiceAdapter;
 import com.inovex.zabbixmobile.listeners.OnListItemSelectedListener;
 import com.inovex.zabbixmobile.model.TriggerSeverity;

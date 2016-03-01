@@ -109,7 +109,7 @@ public class ProblemsActivity extends BaseSeverityFilterActivity<Trigger> {
 
 	@Override
 	protected void loadAdapterContent(boolean hostGroupChanged) {
-		if (mZabbixDataService != null) {
+		if (mZabbixDataService != null && mSpinnerAdapter != null) {
 			super.loadAdapterContent(hostGroupChanged);
 			mZabbixDataService.loadProblemsByHostGroup(
 					mSpinnerAdapter.getCurrentItemId(), hostGroupChanged, this);
