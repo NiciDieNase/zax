@@ -706,14 +706,14 @@ public abstract class BaseActivity extends AppCompatActivity implements
 
 	protected void selectServerItem(long zabbixServerId) {
 		for (int i = 0; i < mServersListAdapter.getCount(); i++) {
-			if (mServersListAdapter.getItemId(i) == zabbixServerId
-					&& mServersListAdapter.getItemId(i) != persistedServerSelection) {
+			if (mServersListAdapter.getItemId(i) == zabbixServerId) {
 				mServersListAdapter.setCurrentPosition(i);
 				setServerViews(mServersListAdapter.getItem(i).getName());
 				this.persistedServerSelection = mServersListAdapter.getItem(i).getId();
 				ZaxPreferences.getInstance(this).setServerSelection(persistedServerSelection);
 				mZabbixDataService.selectAPIServer(persistedServerSelection);
-				this.mZabbixDataService.clearAllData(false);
+				mZabbixDataService.clearAllAdapters();
+//				this.mZabbixDataService.clearAllData(false);
 				this.refreshData();
 				break;
 			}

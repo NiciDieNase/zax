@@ -36,6 +36,7 @@ import com.inovex.zabbixmobile.activities.fragments.ProblemsDetailsFragment;
 import com.inovex.zabbixmobile.activities.fragments.ProblemsListPage;
 import com.inovex.zabbixmobile.activities.fragments.ScreensListFragment;
 import com.inovex.zabbixmobile.adapters.BaseServiceAdapter;
+import com.inovex.zabbixmobile.adapters.BaseServicePagerAdapter;
 import com.inovex.zabbixmobile.adapters.BaseSeverityListPagerAdapter;
 import com.inovex.zabbixmobile.adapters.BaseSeverityPagerAdapter;
 import com.inovex.zabbixmobile.adapters.ChecksApplicationsPagerAdapter;
@@ -183,53 +184,56 @@ public class ZabbixDataService extends Service {
 
 		clearCache();
 
-		// clear adapters
-
-//		ArrayList<BaseServiceAdapter<?>> listAdapters = new ArrayList<BaseServiceAdapter<?>>();
-//		ArrayList<BaseServicePagerAdapter<?>> pagerAdapters = new ArrayList<BaseServicePagerAdapter<?>>();
-//		for(long id : zabbixAPIs.keySet()){
-//
-//			listAdapters.add(mHostGroupsSpinnerAdapter.get(id));
-//			listAdapters.addAll(mEventsListAdapters.get(id).values());
-//			listAdapters.addAll(mProblemsListAdapters.get(id).values());
-//			listAdapters.add(mProblemsMainListAdapter.get(id));
-//			listAdapters.add(mHostsListAdapter.get(id));
-//			listAdapters.addAll(mChecksItemsListAdapters.get(id).values());
-//			listAdapters.add(mScreensListAdapter.get(id));
-//
-//
-//			pagerAdapters.addAll(mEventsDetailsPagerAdapters.get(id).values());
-//			pagerAdapters.addAll(mProblemsDetailsPagerAdapters.get(id).values());
-//			pagerAdapters.add(mChecksApplicationsPagerAdapter.get(id));
-//
-//		}
-//		for (BaseServicePagerAdapter<?> adapter : pagerAdapters) {
-//			adapter.clear();
-//			adapter.notifyDataSetChanged();
-//		}
-//		for (BaseServiceAdapter<?> adapter : listAdapters) {
-//			adapter.clear();
-//			adapter.notifyDataSetChanged();
-//		}
-
-		if(logout){
-			zabbixAPIs.get(mCurrentZabbixServerId).logout();
-			zabbixAPIs.remove(zabbixAPIs.get(mCurrentZabbixServerId));
-			zabbixAPIs.put(mCurrentZabbixServerId, new ZabbixRemoteAPI(this.getApplicationContext(),
-					mDatabaseHelper, mCurrentZabbixServerId, null));
-			zabbixAPIs.put(mCurrentZabbixServerId,zabbixAPIs.get(mCurrentZabbixServerId));
-			this.performZabbixLogin(mCurrentZabbixServerId,null);
-		}
-
 		mPreferences.refresh(getApplicationContext());
 		mCurrentZabbixServerId = mPreferences.getServerSelection();
 		Log.d(TAG, "mCurrentZabbixServerId="+mCurrentZabbixServerId);
+//		clearAllAdapters();
+
+
+		if(logout){
+			ZabbixRemoteAPI remoteAPI = zabbixAPIs.get(mCurrentZabbixServerId);
+			remoteAPI.logout();
+			zabbixAPIs.remove(remoteAPI);
+			remoteAPI = new ZabbixRemoteAPI(this.getApplicationContext(),
+					mDatabaseHelper, mCurrentZabbixServerId, null);
+			zabbixAPIs.put(remoteAPI.getZabbixSeverId(),remoteAPI);
+		}
+	}
+
+	public void clearAllAdapters() {
+		// clear adapters
+
+		ArrayList<BaseServiceAdapter<?>> listAdapters = new ArrayList<BaseServiceAdapter<?>>();
+		ArrayList<BaseServicePagerAdapter<?>> pagerAdapters = new ArrayList<BaseServicePagerAdapter<?>>();
+		for(long id : zabbixAPIs.keySet()){
+
+			listAdapters.add(mHostGroupsSpinnerAdapter.get(id));
+			listAdapters.addAll(mEventsListAdapters.get(id).values());
+			listAdapters.addAll(mProblemsListAdapters.get(id).values());
+			listAdapters.add(mProblemsMainListAdapter.get(id));
+			listAdapters.add(mHostsListAdapter.get(id));
+			listAdapters.addAll(mChecksItemsListAdapters.get(id).values());
+			listAdapters.add(mScreensListAdapter.get(id));
+
+
+			pagerAdapters.addAll(mEventsDetailsPagerAdapters.get(id).values());
+			pagerAdapters.addAll(mProblemsDetailsPagerAdapters.get(id).values());
+			pagerAdapters.add(mChecksApplicationsPagerAdapter.get(id));
+
+		}
+		for (BaseServicePagerAdapter<?> adapter : pagerAdapters) {
+			adapter.clear();
+			adapter.notifyDataSetChanged();
+		}
+		for (BaseServiceAdapter<?> adapter : listAdapters) {
+			adapter.clear();
+			adapter.notifyDataSetChanged();
+		}
 	}
 
 	public void clearCache() {
 		mDatabaseHelper.clearAllData();
 	}
-
 	public ZabbixServer getServerById(long id){
 		return mDatabaseHelper.getZabbixServerById(id);
 	}
@@ -364,7 +368,7 @@ public class ZabbixDataService extends Service {
 	 * @return
 	 */
 	public ChecksApplicationsPagerAdapter getChecksApplicationsPagerAdapter(long serverId) {
-		return mChecksApplicationsPagerAdapter.get(zabbixAPIs.get(serverId).getZabbixSeverId());
+		return mChecksApplicationsPagerAdapter.get(serverId);
 	}
 
 	/**
@@ -373,7 +377,7 @@ public class ZabbixDataService extends Service {
 	 * @return
 	 */
 	public ChecksItemsListAdapter getChecksItemsListAdapter(long serverId, long applicationID) {
-		return mChecksItemsListAdapters.get(zabbixAPIs.get(serverId).getZabbixSeverId()).get(mDatabaseHelper.getApplicationById(applicationID).toString());
+		return mChecksItemsListAdapters.get(serverId).get(mDatabaseHelper.getApplicationById(applicationID).toString());
 	}
 
 	/**
@@ -1233,14 +1237,6 @@ public class ZabbixDataService extends Service {
 		cancelTask(mCurrentLoadGraphsTask);
 	}
 
-	public void cancelAllTasks(){
-		this.cancelLoadApplicationsTask();
-		this.cancelLoadEventsTask();
-		this.cancelLoadGraphsTask();
-		this.cancelLoadHistoryDetailsTasks();
-		this.cancelLoadItemsTask();
-		this.cancelLoadProblemsTask();
-	}
 	/**
 	 * Acknowledges an event.
 	 *

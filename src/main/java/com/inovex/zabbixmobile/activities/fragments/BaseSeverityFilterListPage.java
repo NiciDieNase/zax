@@ -90,13 +90,14 @@ public abstract class BaseSeverityFilterListPage<T> extends
 		View rootView = inflater.inflate(R.layout.page_severity_filter_list,
 				null);
 		swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefreshLayout);
-		swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+		SwipeRefreshLayout.OnRefreshListener listener = new SwipeRefreshLayout.OnRefreshListener() {
 			@Override
 			public void onRefresh() {
-				((BaseActivity)getActivity()).refreshData();
+				((BaseActivity) getActivity()).refreshData();
 				swipeRefreshLayout.setRefreshing(false);
 			}
-		});
+		};
+//		swipeRefreshLayout.setOnRefreshListener(listener);
 
 		final ListView listView = (ListView) rootView.findViewById(android.R.id.list);
 		listView.setOnScrollListener(new AbsListView.OnScrollListener() {
