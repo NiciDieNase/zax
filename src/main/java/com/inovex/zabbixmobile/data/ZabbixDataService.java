@@ -485,6 +485,9 @@ public class ZabbixDataService extends Service {
 	 *
 	 */
 	public void performZabbixLogin(final long serverId, final OnLoginProgressListener listener) {
+		if(!zabbixAPIs.keySet().contains(serverId)){
+			return;
+		}
 		final ZabbixRemoteAPI remoteAPI = zabbixAPIs.get(serverId);
 		final boolean loginNecessary = !remoteAPI.isLoggedIn();
 		if (loginNecessary && listener != null)

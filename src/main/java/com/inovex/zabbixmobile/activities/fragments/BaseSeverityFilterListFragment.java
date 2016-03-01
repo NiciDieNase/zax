@@ -110,6 +110,9 @@ public abstract class BaseSeverityFilterListFragment<T> extends
 		mSeverityListPager = (ViewPager) getView().findViewById(R.id.severity_list_viewpager);
 		// Bind the tab indicator to the adapter
 		mSeverityListPagerAdapter = retrievePagerAdapter();
+		if(mSeverityListPagerAdapter == null){
+			return;
+		}
 		Log.d(TAG, "current severity: " + mSeverityListPagerAdapter.getCurrentObject());
 		mSeverityListPagerAdapter.setFragmentManager(getChildFragmentManager());
 		mSeverityListPager.setAdapter(mSeverityListPagerAdapter);
@@ -170,12 +173,13 @@ public abstract class BaseSeverityFilterListFragment<T> extends
 	 */
 	@SuppressWarnings("unchecked")
 	public void refreshItemSelection() {
-		if (mSeverityListPager == null)
-			return;
-		BaseSeverityFilterListPage<T> currentPage = (BaseSeverityFilterListPage<T>) mSeverityListPagerAdapter
-				.instantiateItem(mSeverityListPager,mSeverityListPager.getCurrentItem());
-		if (currentPage != null)
-			currentPage.refreshItemSelection();
+		if (mSeverityListPager != null && mSeverityListPagerAdapter != null){
+			BaseSeverityFilterListPage<T> currentPage = (BaseSeverityFilterListPage<T>) mSeverityListPagerAdapter
+					.instantiateItem(mSeverityListPager,mSeverityListPager.getCurrentItem());
+			if (currentPage != null) {
+				currentPage.refreshItemSelection();
+			}
+		}
 	}
 
 	/**
