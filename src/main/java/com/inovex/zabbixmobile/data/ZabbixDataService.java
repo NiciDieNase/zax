@@ -187,7 +187,7 @@ public class ZabbixDataService extends Service {
 		mPreferences.refresh(getApplicationContext());
 		mCurrentZabbixServerId = mPreferences.getServerSelection();
 		Log.d(TAG, "mCurrentZabbixServerId="+mCurrentZabbixServerId);
-//		clearAllAdapters();
+//		refreshAdapters();
 
 
 		if(logout){
@@ -200,7 +200,11 @@ public class ZabbixDataService extends Service {
 		}
 	}
 
-	public void clearAllAdapters() {
+	public void refreshAdapters(){
+		this.refreshAdapters(true);
+	}
+
+	public void refreshAdapters(boolean clear) {
 		// clear adapters
 
 		ArrayList<BaseServiceAdapter<?>> listAdapters = new ArrayList<BaseServiceAdapter<?>>();
@@ -222,11 +226,15 @@ public class ZabbixDataService extends Service {
 
 		}
 		for (BaseServicePagerAdapter<?> adapter : pagerAdapters) {
-			adapter.clear();
+			if(clear){
+				adapter.clear();
+			}
 			adapter.notifyDataSetChanged();
 		}
 		for (BaseServiceAdapter<?> adapter : listAdapters) {
-			adapter.clear();
+			if(clear){
+				adapter.clear();
+			}
 			adapter.notifyDataSetChanged();
 		}
 	}

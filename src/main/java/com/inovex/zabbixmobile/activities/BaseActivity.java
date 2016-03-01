@@ -315,6 +315,7 @@ public abstract class BaseActivity extends AppCompatActivity implements
 		mServerSelectButton.setOnClickListener(this);
 		mServerNameLayout.setOnClickListener(this);
 		restoreServerSelection();
+		refreshData(false);
 	}
 
 	@Override
@@ -438,6 +439,7 @@ public abstract class BaseActivity extends AppCompatActivity implements
 		} catch (KeyManagementException e) {
 			e.printStackTrace();
 		}
+		this.refreshData(false);
 	}
 
 	/**
