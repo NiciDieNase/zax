@@ -89,14 +89,14 @@ public abstract class BaseSeverityFilterListPage<T> extends
 			Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.page_severity_filter_list,
 				null);
-		swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefreshLayout);
-		SwipeRefreshLayout.OnRefreshListener listener = new SwipeRefreshLayout.OnRefreshListener() {
-			@Override
-			public void onRefresh() {
-				((BaseActivity) getActivity()).refreshData();
-				swipeRefreshLayout.setRefreshing(false);
-			}
-		};
+//		swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefreshLayout);
+//		SwipeRefreshLayout.OnRefreshListener listener = new SwipeRefreshLayout.OnRefreshListener() {
+//			@Override
+//			public void onRefresh() {
+//				((BaseActivity) getActivity()).refreshData();
+//				swipeRefreshLayout.setRefreshing(false);
+//			}
+//		};
 //		swipeRefreshLayout.setOnRefreshListener(listener);
 
 		final ListView listView = (ListView) rootView.findViewById(android.R.id.list);
@@ -125,7 +125,7 @@ public abstract class BaseSeverityFilterListPage<T> extends
 			public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
 				int topRowVerticalPosition = (listView == null || listView.getChildCount() == 0)
 						? 0 : listView.getChildAt(0).getTop();
-				swipeRefreshLayout.setEnabled(firstVisibleItem == 0 && topRowVerticalPosition >= 0);
+//				swipeRefreshLayout.setEnabled(firstVisibleItem == 0 && topRowVerticalPosition >= 0);
 			}
 		});
 		return rootView;
